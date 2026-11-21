@@ -6,7 +6,7 @@ App Android (Kotlin) para el control remoto DJI que asiste la **inspección de a
 - Key de DJI Developer: `DJI_API_KEY=...` en `local.properties` (registrada para `mx.com.nexusio.fly`)
 - Backend Supabase: `ui/BackendConfig.kt`
 - `minSdk 24` / `targetSdk 30` · solo arm64
-- **DJI Mobile SDK V5 5.18.0** (aircraft, networkImp, uxsdk local) · MapLibre
+- **DJI Mobile SDK V5 5.20.1** (aircraft, networkImp, uxsdk local alineado a 5.20.1, wpmzsdk 1.0.5.2) · MapLibre
 
 ## Módulos
 

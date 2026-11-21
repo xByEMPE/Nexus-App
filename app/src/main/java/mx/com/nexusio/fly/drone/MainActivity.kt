@@ -1,5 +1,6 @@
 package mx.com.nexusio.fly.drone
 
+import mx.com.nexusio.fly.ui.NexusThemeMode
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowCompat
@@ -51,7 +52,10 @@ import mx.com.nexusio.fly.drone.onestop.job.WtgmRemoteSource
 
 // Imports DJI MSDK V5
 import dji.v5.common.error.IDJIError
+import dji.open.pilot.client.manager.ServerState
 import dji.v5.common.register.DJISDKInitEvent
+import dji.v5.common.register.InitSettings
+import dji.v5.common.register.SDKLinKMode
 import dji.v5.manager.SDKManager
 import dji.v5.manager.interfaces.SDKManagerCallback
 import dji.sdk.keyvalue.key.KeyTools
@@ -204,9 +208,11 @@ class MainActivity : AppCompatActivity(), SDKManagerCallback {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        NexusThemeMode.apply(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         ocultarBarraDeEstado()
+        configurarBotonModo()
 
         prefsSafety = getSharedPreferences(PREFS_SAFETY, MODE_PRIVATE)
         turbineStore = ProjectTurbineStore(prefsSafety)
@@ -936,7 +942,8 @@ class MainActivity : AppCompatActivity(), SDKManagerCallback {
         if (sdkRegistered) return
         if (!sdkInitStarted) {
             sdkInitStarted = true
-            try { SDKManager.getInstance().init(this, this) } catch (e: Exception) {
+            // MSDK 5.20: init(context, InitSettings, callback); LOCAL = la app controla el dron directamente (no plugin de DJI Pilot)
+            try { SDKManager.getInstance().init(this, InitSettings(SDKLinKMode.LOCAL), this) } catch (e: Exception) {
                 sdkInitStarted = false
                 Log.e(TAG, e.message ?: "")
                 programarReintentoRegistro()
@@ -983,7 +990,14 @@ class MainActivity : AppCompatActivity(), SDKManagerCallback {
     override fun onProductConnect(productId: Int) = Unit
     override fun onProductDisconnect(productId: Int) = Unit
     override fun onProductChanged(productId: Int) = Unit
+    @Deprecated("Obsoleto en MSDK 5.20")
     override fun onDatabaseDownloadProgress(current: Long, total: Long) = Unit
+
+    // MSDK 5.20: solo aplican al modo plugin de DJI Pilot (SDKLinKMode.REMOTE_PILOT); en LOCAL no se usan.
+    override fun onRemoteServerStateUpdated(serverState: ServerState?) = Unit
+    override fun onRemoteServerCompatibleError(error: IDJIError?) {
+        Log.e(TAG, "Servidor remoto incompatible: ${error?.description()}")
+    }
 
     private fun initDroneConnectionListener() {
         val connectionKey = KeyTools.createKey(FlightControllerKey.KeyConnection)
@@ -994,6 +1008,15 @@ class MainActivity : AppCompatActivity(), SDKManagerCallback {
                 actualizarVisibilidadRotorYValidar()
             }
         }
+    }
+
+    /** Botón sol/luna: muestra el modo al que se cambia y alterna día/noche. */
+    private fun configurarBotonModo() {
+        val btn = findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_theme_mode)
+        val noche = NexusThemeMode.isNight(this)
+        btn.setIconResource(if (noche) R.drawable.ic_nx_sun else R.drawable.ic_nx_moon)
+        btn.contentDescription = if (noche) "Cambiar a modo día" else "Cambiar a modo noche"
+        btn.setOnClickListener { NexusThemeMode.toggle(this) }
     }
 
     /** Pantalla completa: en el mando cada dp vertical cuenta (la barra reaparece deslizando). */

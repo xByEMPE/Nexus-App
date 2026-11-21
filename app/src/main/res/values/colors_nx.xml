@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Paleta Nexus · modo día (tema claro de NEXUS/src/app/globals.css) -->
+<resources>
+    <color name="nx_background">#F6F7F9</color>
+    <color name="nx_surface">#FFFFFF</color>
+    <color name="nx_surface_raised">#EFF1F5</color>
+    <color name="nx_border_subtle">#DCDFE5</color>
+    <color name="nx_border_strong">#BCC0C8</color>
+    <color name="nx_accent">#1F68E5</color>
+    <color name="nx_accent_deep">#E5EFFF</color>
+    <color name="nx_accent_muted">#5E72A1</color>
+    <color name="nx_telemetry">#1053C6</color>
+    <color name="nx_critical">#D32E22</color>
+    <color name="nx_caution">#AE6409</color>
+    <color name="nx_fg">#0F121A</color>
+    <color name="nx_fg_muted">#4D525C</color>
+    <color name="nx_disabled_text">#61000000</color>
+    <color name="nx_rotor_backdrop">#1E2633</color>
+    <color name="nx_rotor_text">#C9D1DC</color>
+    <color name="nx_on_accent">#FFFFFF</color>
+    <color name="nx_on_accent_disabled">#99FFFFFF</color>
+    <color name="nx_accent_tint">#1F2F7BFE</color>
+    <color name="nx_accent_halo">#402F7BFE</color>
+    <color name="nx_critical_tint">#1FFF5A4E</color>
+    <bool name="nx_light_system_bars">true</bool>
+</resources>

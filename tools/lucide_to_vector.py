@@ -17,7 +17,7 @@ ICONS = {
     "log-out": "logout", "plus": "plus", "shield": "shield", "fan": "fan", "cpu": "cpu",
     "satellite": "satellite", "battery": "battery", "gamepad-2": "gamepad", "wifi": "signal",
     "camera": "camera", "map-pin": "pin", "download": "download", "history": "history",
-    "file-up": "file_up", "database": "database", "x": "close",
+    "file-up": "file_up", "database": "database", "x": "close", "sun": "sun", "moon": "moon",
 }
 
 STROKE_WIDTH = "1.6"

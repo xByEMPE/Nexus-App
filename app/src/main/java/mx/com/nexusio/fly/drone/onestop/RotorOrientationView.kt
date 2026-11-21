@@ -42,6 +42,7 @@ class RotorOrientationView @JvmOverloads constructor(
     private val frameRect = RectF()
 
     private val paintGlow = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val paintBackdrop = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = color(R.color.nx_rotor_backdrop) }
     private val paintFrame = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeWidth = dp(1f)
@@ -68,7 +69,7 @@ class RotorOrientationView @JvmOverloads constructor(
     private val paintHint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = dp(10f)
         textAlign = Paint.Align.RIGHT
-        color = color(R.color.nx_fg_muted)
+        color = color(R.color.nx_rotor_text)
     }
     private val colorLetterPending = color(R.color.nx_fg_muted)
 
@@ -96,6 +97,7 @@ class RotorOrientationView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        canvas.drawRoundRect(frameRect, corner, corner, paintBackdrop)
         canvas.drawRoundRect(frameRect, corner, corner, paintGlow)
         canvas.drawRoundRect(frameRect, corner, corner, paintFrame)
         turbine?.draw(canvas)

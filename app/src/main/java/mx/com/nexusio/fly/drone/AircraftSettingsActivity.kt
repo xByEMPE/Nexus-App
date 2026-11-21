@@ -1,5 +1,6 @@
 package mx.com.nexusio.fly.drone
 
+import mx.com.nexusio.fly.ui.NexusThemeMode
 import android.widget.TextView
 import android.view.View
 import androidx.core.content.ContextCompat
@@ -59,6 +60,7 @@ class AircraftSettingsActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        NexusThemeMode.apply(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_aircraft_settings)
 

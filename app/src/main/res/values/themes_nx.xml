@@ -2,7 +2,7 @@
 <!-- Sistema de diseño Nexus para las pantallas que no son de vuelo. -->
 <resources>
 
-    <style name="Theme.Nexus.App" parent="Theme.MaterialComponents.NoActionBar">
+    <style name="Theme.Nexus.App" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/nx_accent</item>
         <item name="colorPrimaryVariant">@color/nx_accent_deep</item>
         <item name="colorOnPrimary">@color/nx_fg</item>
@@ -20,6 +20,7 @@
         <item name="colorControlActivated">@color/nx_accent</item>
         <item name="android:statusBarColor">@color/nx_background</item>
         <item name="android:navigationBarColor">@color/nx_background</item>
+        <item name="android:windowLightStatusBar">@bool/nx_light_system_bars</item>
         <item name="android:listDivider">@drawable/nx_divider</item>
         <item name="alertDialogTheme">@style/Theme.Nexus.Dialog</item>
         <item name="materialAlertDialogTheme">@style/Theme.Nexus.Dialog</item>
@@ -43,7 +44,7 @@
     </style>
 
     <!-- Diálogo a pantalla completa sin marco (login, job One Stop) -->
-    <style name="Theme.Nexus.Dialog.Bare" parent="Theme.MaterialComponents.Dialog">
+    <style name="Theme.Nexus.Dialog.Bare" parent="Theme.MaterialComponents.DayNight.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowNoTitle">true</item>
         <item name="colorPrimary">@color/nx_accent</item>
@@ -174,12 +175,12 @@
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
         <item name="backgroundTint">@color/nx_btn_primary_bg</item>
-        <item name="android:textColor">@color/nx_btn_text</item>
+        <item name="android:textColor">@color/nx_btn_primary_text</item>
         <item name="android:textSize">12sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:letterSpacing">0.12</item>
         <item name="cornerRadius">@dimen/nx_radius_s</item>
-        <item name="iconTint">@color/nx_fg</item>
+        <item name="iconTint">@color/nx_on_accent</item>
         <item name="iconSize">16dp</item>
         <item name="iconGravity">textStart</item>
     </style>

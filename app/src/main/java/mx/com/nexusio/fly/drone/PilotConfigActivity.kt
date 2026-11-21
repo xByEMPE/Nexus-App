@@ -1,5 +1,6 @@
 package mx.com.nexusio.fly.drone
 
+import mx.com.nexusio.fly.ui.NexusThemeMode
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import mx.com.nexusio.fly.ui.BackendConfig
@@ -70,6 +71,7 @@ class PilotConfigActivity : AppCompatActivity() {
     private var currentAccessToken: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        NexusThemeMode.apply(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pilot_config)
         supportActionBar?.hide()

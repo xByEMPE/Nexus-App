@@ -27,7 +27,7 @@
             android:layout_weight="1"
             android:ellipsize="end"
             android:singleLine="true"
-            android:text="Inspección de aerogeneradores" />
+            android:text="Inspecciones Industriales" />
 
         <TextView
             android:id="@+id/tv_drone_status"
@@ -36,6 +36,14 @@
             android:drawableStart="@drawable/bg_nx_dot"
             android:drawableTint="@color/nx_caution"
             android:text="Dron no conectado" />
+
+        <!-- Modo día / noche (por defecto noche) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_theme_mode"
+            style="@style/Nx.IconButton"
+            android:layout_marginStart="8dp"
+            android:contentDescription="Cambiar a modo día"
+            app:icon="@drawable/ic_nx_sun" />
 
         <!-- Píldora del piloto: abre el perfil (con sesión) o el inicio de sesión (sin sesión) -->
         <TextView
