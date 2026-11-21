@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item><shape android:shape="rectangle"><solid android:color="@color/nx_surface"/><stroke android:width="1dp" android:color="@color/nx_border_subtle"/><corners android:radius="@dimen/nx_radius"/></shape></item>
+    <item android:gravity="top" android:height="2dp" android:left="1dp" android:right="1dp"><shape android:shape="rectangle"><solid android:color="@color/nx_caution"/><corners android:topLeftRadius="@dimen/nx_radius" android:topRightRadius="@dimen/nx_radius"/></shape></item>
+</layer-list>

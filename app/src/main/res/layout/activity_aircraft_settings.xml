@@ -1,0 +1,643 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ajustes de aeronave: sistema de gestión sanitaria VANT + configuración de vuelo y seguridad -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/nx_background"
+    android:orientation="vertical">
+
+    <LinearLayout style="@style/Nx.TopBar">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_settings_back"
+            style="@style/Nx.IconButton"
+            android:contentDescription="Volver"
+            app:icon="@drawable/ic_nx_back" />
+
+        <TextView
+            style="@style/Nx.TopBar.Title"
+            android:layout_width="0dp"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:text="Ajustes de aeronave" />
+
+        <TextView style="@style/Nx.Wordmark" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/nx_space_m">
+
+            <TextView
+                style="@style/Nx.SectionLabel"
+                android:drawableStart="@drawable/ic_nx_shield_sm"
+                android:drawablePadding="6dp"
+                android:drawableTint="@color/nx_accent_muted"
+                android:gravity="center_vertical"
+                android:text="Sistema de gestión sanitaria VANT" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/card_propulsion"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_nx_health_nodata"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_nx_icon_box"
+                    android:contentDescription="Propulsión"
+                    android:padding="7dp"
+                    android:src="@drawable/ic_nx_fan"
+                    app:tint="@color/nx_fg" />
+
+                <TextView
+                    style="@style/Nx.Body"
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:text="Propulsión"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_status_propulsion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:drawablePadding="4dp"
+                    android:singleLine="true"
+                    android:text="Buscando…"
+                    android:textColor="@color/nx_fg_muted"
+                    android:textSize="11sp" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/card_avionica"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_nx_health_nodata"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_nx_icon_box"
+                    android:contentDescription="Aviónica"
+                    android:padding="7dp"
+                    android:src="@drawable/ic_nx_cpu"
+                    app:tint="@color/nx_fg" />
+
+                <TextView
+                    style="@style/Nx.Body"
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:text="Aviónica"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_status_avionica"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:drawablePadding="4dp"
+                    android:singleLine="true"
+                    android:text="Buscando…"
+                    android:textColor="@color/nx_fg_muted"
+                    android:textSize="11sp" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/card_posicionamiento"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_nx_health_nodata"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_nx_icon_box"
+                    android:contentDescription="Posicionamiento"
+                    android:padding="7dp"
+                    android:src="@drawable/ic_nx_satellite"
+                    app:tint="@color/nx_fg" />
+
+                <TextView
+                    style="@style/Nx.Body"
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:text="Posicionamiento"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_status_posicionamiento"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:drawablePadding="4dp"
+                    android:singleLine="true"
+                    android:text="Buscando…"
+                    android:textColor="@color/nx_fg_muted"
+                    android:textSize="11sp" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/card_bateria"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_nx_health_nodata"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_nx_icon_box"
+                    android:contentDescription="Batería"
+                    android:padding="7dp"
+                    android:src="@drawable/ic_nx_battery"
+                    app:tint="@color/nx_fg" />
+
+                <TextView
+                    style="@style/Nx.Body"
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:text="Batería"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_status_bateria"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:drawablePadding="4dp"
+                    android:singleLine="true"
+                    android:text="Buscando…"
+                    android:textColor="@color/nx_fg_muted"
+                    android:textSize="11sp" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/card_rc"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_nx_health_nodata"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_nx_icon_box"
+                    android:contentDescription="Control remoto"
+                    android:padding="7dp"
+                    android:src="@drawable/ic_nx_gamepad"
+                    app:tint="@color/nx_fg" />
+
+                <TextView
+                    style="@style/Nx.Body"
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:text="Control remoto"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_status_rc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:drawablePadding="4dp"
+                    android:singleLine="true"
+                    android:text="Buscando…"
+                    android:textColor="@color/nx_fg_muted"
+                    android:textSize="11sp" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/card_transmision"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_nx_health_nodata"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_nx_icon_box"
+                    android:contentDescription="Transmisión"
+                    android:padding="7dp"
+                    android:src="@drawable/ic_nx_signal"
+                    app:tint="@color/nx_fg" />
+
+                <TextView
+                    style="@style/Nx.Body"
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:text="Transmisión"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_status_transmision"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:drawablePadding="4dp"
+                    android:singleLine="true"
+                    android:text="Buscando…"
+                    android:textColor="@color/nx_fg_muted"
+                    android:textSize="11sp" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/card_camara"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_nx_health_nodata"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_nx_icon_box"
+                    android:contentDescription="Cámara / estab."
+                    android:padding="7dp"
+                    android:src="@drawable/ic_nx_camera"
+                    app:tint="@color/nx_fg" />
+
+                <TextView
+                    style="@style/Nx.Body"
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:text="Cámara / estab."
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_status_camara"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:drawablePadding="4dp"
+                    android:singleLine="true"
+                    android:text="Buscando…"
+                    android:textColor="@color/nx_fg_muted"
+                    android:textSize="11sp" />
+            </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/nx_space_m"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <!-- Límites de vuelo -->
+                <LinearLayout
+                    style="@style/Nx.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <TextView
+                        style="@style/Nx.SectionLabel"
+                        android:text="Límites de vuelo" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/Nx.Body.Muted"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:text="Altura máxima" />
+
+                    <EditText
+                        android:id="@+id/et_max_height"
+                        style="@style/Nx.Field"
+                        android:layout_width="64dp"
+                        android:layout_height="34dp"
+                        android:fontFamily="monospace"
+                        android:gravity="end|center_vertical"
+                        android:importantForAutofill="no"
+                        android:inputType="number"
+                        android:paddingStart="6dp"
+                        android:paddingEnd="8dp" />
+
+                    <TextView
+                        style="@style/Nx.Body.Muted"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="8dp"
+                        android:text="m" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_set_max_height"
+                        style="@style/Nx.Button.Mini"
+                        android:layout_width="wrap_content"
+                        android:text="SET" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/Nx.Body.Muted"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:text="Altura RTH / regreso" />
+
+                    <EditText
+                        android:id="@+id/et_rth_height"
+                        style="@style/Nx.Field"
+                        android:layout_width="64dp"
+                        android:layout_height="34dp"
+                        android:fontFamily="monospace"
+                        android:gravity="end|center_vertical"
+                        android:importantForAutofill="no"
+                        android:inputType="number"
+                        android:paddingStart="6dp"
+                        android:paddingEnd="8dp" />
+
+                    <TextView
+                        style="@style/Nx.Body.Muted"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="8dp"
+                        android:text="m" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_set_rth_height"
+                        style="@style/Nx.Button.Mini"
+                        android:layout_width="wrap_content"
+                        android:text="SET" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/Nx.Body.Muted"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:text="Distancia máxima" />
+
+                    <EditText
+                        android:id="@+id/et_max_radius"
+                        style="@style/Nx.Field"
+                        android:layout_width="64dp"
+                        android:layout_height="34dp"
+                        android:fontFamily="monospace"
+                        android:gravity="end|center_vertical"
+                        android:importantForAutofill="no"
+                        android:inputType="number"
+                        android:paddingStart="6dp"
+                        android:paddingEnd="8dp" />
+
+                    <TextView
+                        style="@style/Nx.Body.Muted"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="8dp"
+                        android:text="m" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_set_max_radius"
+                        style="@style/Nx.Button.Mini"
+                        android:layout_width="wrap_content"
+                        android:text="SET" />
+                </LinearLayout>
+                </LinearLayout>
+
+                <!-- Anticolisión y failsafe -->
+                <LinearLayout
+                    style="@style/Nx.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/nx_space_m"
+                    android:layout_weight="1">
+
+                    <TextView
+                        style="@style/Nx.SectionLabel"
+                        android:text="Anticolisión y failsafe" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/Nx.Body.Muted"
+                        android:layout_width="0dp"
+                        android:layout_weight="0.8"
+                        android:text="Acción de sensores" />
+
+                    <Spinner
+                        android:id="@+id/spinner_avoidance_action"
+                        style="@style/Nx.Spinner"
+                        android:layout_width="0dp"
+                        android:layout_height="34dp"
+                        android:layout_weight="1.2" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/Nx.Body.Muted"
+                        android:layout_width="0dp"
+                        android:layout_weight="0.8"
+                        android:text="Pérdida de señal" />
+
+                    <Spinner
+                        android:id="@+id/spinner_failsafe_action"
+                        style="@style/Nx.Spinner"
+                        android:layout_width="0dp"
+                        android:layout_height="34dp"
+                        android:layout_weight="1.2" />
+                </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/Nx.Body.Muted"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:text="Freno / alerta" />
+
+                        <TextView
+                            android:id="@+id/tv_slider_values"
+                            style="@style/Nx.Value.Mono"
+                            android:text="Freno: 3m | Alerta: 15m"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <com.google.android.material.slider.RangeSlider
+                        android:id="@+id/rs_obstacle_distance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:stepSize="1.0"
+                        android:valueFrom="3.0"
+                        android:valueTo="30.0"
+                        app:haloColor="@color/nx_accent_tint"
+                        app:thumbColor="@color/nx_accent"
+                        app:tickVisible="false"
+                        app:trackColorActive="@color/nx_accent"
+                        app:trackColorInactive="@color/nx_border_strong" />
+                </LinearLayout>
+
+                <!-- Punto de origen + aplicación -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/nx_space_m"
+                    android:layout_weight="0.8"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        style="@style/Nx.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            style="@style/Nx.SectionLabel"
+                            android:text="Punto de origen" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_home_to_drone"
+                                style="@style/Nx.Button.Secondary"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:minHeight="40dp"
+                                android:layout_weight="1"
+                                android:text="En dron"
+                                app:icon="@drawable/ic_nx_pin" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_home_to_rc"
+                                style="@style/Nx.Button.Secondary"
+                                android:layout_width="0dp"
+                                android:layout_height="40dp"
+                                android:minHeight="40dp"
+                                android:layout_marginStart="6dp"
+                                android:layout_weight="1"
+                                android:text="En control"
+                                app:icon="@drawable/ic_nx_gamepad" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        style="@style/Nx.Card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/nx_space_m">
+
+                        <TextView
+                            android:id="@+id/tv_settings_app_version"
+                            style="@style/Nx.SectionLabel"
+                            android:text="Aplicación" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_check_updates"
+                            style="@style/Nx.Button.Secondary"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:minHeight="40dp"
+                            android:text="Buscar actualizaciones"
+                            app:icon="@drawable/ic_nx_download" />
+
+                        <TextView
+                            style="@style/Nx.SectionLabel"
+                            android:layout_marginTop="10dp"
+                            android:drawableStart="@drawable/ic_nx_history_sm"
+                            android:drawablePadding="6dp"
+                            android:drawableTint="@color/nx_accent_muted"
+                            android:gravity="center_vertical"
+                            android:text="Historial de versiones" />
+
+                        <LinearLayout
+                            android:id="@+id/layout_version_history"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

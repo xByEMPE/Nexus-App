@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <dji.v5.ux.core.widget.fpv.FPVWidget
+        android:id="@+id/widget_fpv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <dji.v5.ux.core.widget.hsi.PrimaryFlightDisplayWidget
+        android:id="@+id/widget_pfd"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <dji.v5.ux.core.widget.hsi.HorizontalSituationIndicatorWidget
+        android:id="@+id/widget_hsi"
+        android:layout_width="wrap_content"
+        android:layout_height="160dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="-30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <dji.v5.ux.core.panel.topbar.TopBarPanelWidget
+        android:id="@+id/panel_top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="#000000"
+        android:paddingTop="0dp"
+        android:paddingBottom="0dp"
+        app:uxsdk_itemsMarginRight="16dp"
+        app:uxsdk_itemsSpacing="10dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <dji.v5.ux.core.widget.remainingflighttime.RemainingFlightTimeWidget
+        android:id="@+id/widget_remaining_flight_time"
+        android:layout_width="match_parent"
+        android:layout_height="18dp"
+        android:layout_marginTop="-8dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintTop_toBottomOf="@id/panel_top_bar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/workflow_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="4dp"
+        android:layout_marginTop="-4dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintTop_toBottomOf="@id/widget_remaining_flight_time"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView android:id="@+id/step_id" android:layout_width="35dp" android:layout_height="35dp" android:background="@drawable/circle_bg" android:gravity="center" android:text="📷" android:textColor="#FFF"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=" ➔ " android:textColor="#FFF" android:textStyle="bold"/>
+        <TextView android:id="@+id/step_te" android:layout_width="35dp" android:layout_height="35dp" android:background="@drawable/circle_bg" android:gravity="center" android:text="TE" android:textColor="#FFF" android:textStyle="bold"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=" ➔ " android:textColor="#FFF" android:textStyle="bold"/>
+        <TextView android:id="@+id/step_ps" android:layout_width="35dp" android:layout_height="35dp" android:background="@drawable/circle_bg" android:gravity="center" android:text="PS" android:textColor="#FFF" android:textStyle="bold"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=" ➔ " android:textColor="#FFF" android:textStyle="bold"/>
+        <TextView android:id="@+id/step_le" android:layout_width="35dp" android:layout_height="35dp" android:background="@drawable/circle_bg" android:gravity="center" android:text="LE" android:textColor="#FFF" android:textStyle="bold"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=" ➔ " android:textColor="#FFF" android:textStyle="bold"/>
+        <TextView android:id="@+id/step_ss" android:layout_width="35dp" android:layout_height="35dp" android:background="@drawable/circle_bg" android:gravity="center" android:text="SS" android:textColor="#FFF" android:textStyle="bold"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=" ➔ " android:textColor="#FFF" android:textStyle="bold"/>
+        <TextView android:id="@+id/step_save" android:layout_width="35dp" android:layout_height="35dp" android:background="@drawable/circle_bg" android:gravity="center" android:text="💾" android:textColor="#FFF"/>
+
+        <TextView
+            android:id="@+id/tv_instruction"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Capturar Foto ID"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:background="#99000000"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="6dp"
+            android:layout_marginHorizontal="16dp"/>
+
+        <TextView
+            android:id="@+id/tv_laser_distance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Distancia: -- m"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:background="#FFFFFF"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_master_controls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="16dp">
+
+        <ImageButton
+            android:id="@+id/btn_gimbal_toggle"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:background="@drawable/circle_bg_gray"
+            android:src="@android:drawable/ic_menu_rotate"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone"/>
+
+        <ImageButton
+            android:id="@+id/btn_main_action"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:background="@drawable/circle_bg_solid"
+            android:backgroundTint="#2196F3"
+            android:src="@android:drawable/ic_menu_camera"
+            app:tint="#FFFFFF"
+            android:scaleType="centerInside"
+            android:padding="14dp"
+            android:elevation="6dp" />
+
+        <LinearLayout
+            android:id="@+id/layout_brightness"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginTop="16dp">
+
+            <android.widget.Button
+                android:id="@+id/btn_ev_plus"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:text="+"
+                android:textSize="20sp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/circle_bg_gray"
+                android:layout_marginBottom="8dp"/>
+
+            <android.widget.Button
+                android:id="@+id/btn_ev_minus"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:text="-"
+                android:textSize="20sp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/circle_bg_gray" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

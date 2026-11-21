@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Botón H (punto de casa): círculo oscuro con borde blanco, como el icono de home de DJI. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#B3000000" />
+    <stroke android:width="2dp" android:color="#FFFFFF" />
+    <size android:width="45dp" android:height="45dp" />
+</shape>

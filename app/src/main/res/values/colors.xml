@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="outdoor_background_base">#DFE4EA</color>
+    <color name="outdoor_surface">#F1F3F6</color>
+
+    <!-- Paleta Nexus (NEXUS/src/lib/palette.ts) -->
+    <color name="nx_background">#000000</color>
+    <color name="nx_surface">#090A0C</color>
+    <color name="nx_surface_raised">#101114</color>
+    <color name="nx_border_subtle">#262626</color>
+    <color name="nx_border_strong">#3B3B3B</color>
+    <color name="nx_accent">#2F7BFE</color>
+    <color name="nx_accent_deep">#001233</color>
+    <color name="nx_accent_muted">#5F72A0</color>
+    <color name="nx_telemetry">#70A5FF</color>
+    <color name="nx_critical">#FF5A4E</color>
+    <color name="nx_caution">#E8B04B</color>
+    <color name="nx_fg">#FFFFFF</color>
+    <color name="nx_fg_muted">#9AA3B2</color>
+    <color name="nx_accent_tint">#1F2F7BFE</color>
+    <color name="nx_accent_halo">#402F7BFE</color>
+    <color name="nx_critical_tint">#1FFF5A4E</color>
+    <color name="nx_disabled_text">#66FFFFFF</color>
+</resources>

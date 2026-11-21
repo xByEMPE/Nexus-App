@@ -1,0 +1,22 @@
+{
+  "jobVersion": 1,
+  "turbine": {
+    "name": "WTG-014",
+    "model": "Vestas V112-3.0",
+    "manufacturer": "Vestas"
+  },
+  "dimensions": {
+    "rotorDiameter": 112.0,
+    "hubLength": 2.5,
+    "bladeFlangeRadius": 1.255,
+    "bladeMaxChordWidth": 3.8,
+    "hubCenterToBladeFlange": 2.0,
+    "hubCenterToMaxChordWidth": 12.4,
+    "bladeTiltAngle": 4.5,
+    "rotorAxisAngle": 9.0,
+    "towerCenterToHubCenter": 3.0,
+    "towerBottomRadius": 3.0,
+    "towerTopRadius": 2.0,
+    "nacelleThickness": 2.5
+  }
+}

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Inicio de sesión (LoginDialog). Tarjeta oscura centrada sobre la pantalla principal. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="340dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_nx_dialog"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/Nx.Wordmark"
+                android:layout_width="0dp"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/btn_login_close"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Cerrar"
+                android:src="@drawable/ic_nx_close"
+                app:tint="@color/nx_fg_muted" />
+        </LinearLayout>
+
+        <TextView
+            style="@style/Nx.Body"
+            android:layout_marginTop="8dp"
+            android:text="Iniciar sesión"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <TextView
+            style="@style/Nx.Body.Muted"
+            android:layout_marginTop="2dp"
+            android:text="Accede con tu cuenta de piloto para sincronizar proyectos." />
+
+        <TextView
+            style="@style/Nx.SectionLabel"
+            android:layout_marginTop="14dp"
+            android:text="Correo electrónico" />
+
+        <EditText
+            android:id="@+id/et_login_email"
+            style="@style/Nx.Field"
+            android:autofillHints="emailAddress"
+            android:drawableStart="@drawable/ic_nx_mail"
+            android:hint="piloto@empresa.com"
+            android:inputType="textEmailAddress" />
+
+        <TextView
+            style="@style/Nx.SectionLabel"
+            android:layout_marginTop="10dp"
+            android:text="Contraseña" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:boxBackgroundMode="none"
+            app:endIconMode="password_toggle"
+            app:endIconTint="@color/nx_fg_muted"
+            app:hintEnabled="false">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_login_password"
+                style="@style/Nx.Field"
+                android:autofillHints="password"
+                android:drawableStart="@drawable/ic_nx_lock"
+                android:hint="Contraseña"
+                android:inputType="textPassword"
+                android:paddingEnd="44dp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_login_submit"
+            style="@style/Nx.Button.Primary"
+            android:layout_width="match_parent"
+            android:layout_marginTop="16dp"
+            android:text="ACCEDER Y SINCRONIZAR" />
+    </LinearLayout>
+</FrameLayout>

@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Sección "Cargar JOB" de One-Stop (solo maquetado, sin lógica).
+    Pensada para la pantalla del control (horizontal): se incluye a pantalla completa o como diálogo antes de calcular el plan.
+    Convención de color de cada valor en la tabla (la aplica el código al cargar): azul claro = viene del .job, gris = genérico.
+    Formato del archivo: docs/onestop_job_format.md
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/nx_background"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/tv_job_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/onestop_job_title"
+            android:textColor="@color/nx_fg"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:drawableStart="@drawable/ic_nx_turbine"
+            android:drawablePadding="10dp"
+            android:drawableTint="@color/nx_telemetry"
+            android:gravity="center_vertical"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- ===== Columna izquierda: archivo, turbina, altura de buje, dron ===== -->
+        <LinearLayout
+            android:id="@+id/col_job_left"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="8dp"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@id/tv_job_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/col_job_right"
+            app:layout_constraintHorizontal_weight="1">
+
+            <!-- Archivo .job (se elige del almacenamiento del control) -->
+            <LinearLayout style="@style/OneStopJobCard">
+                <TextView style="@style/OneStopJobSection" android:text="@string/onestop_job_section_file" />
+
+                <!-- Jobs guardados en la base de datos (tabla wtgmFile): se elige uno y se confirma antes de descargarlo -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_job_remote"
+                    style="@style/Nx.Button.Secondary"
+                    android:layout_width="match_parent"
+                    android:text="@string/onestop_job_remote"
+                    app:icon="@drawable/ic_nx_database" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_job_load"
+                    style="@style/Nx.Button.Secondary"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/onestop_job_load"
+                    app:icon="@drawable/ic_nx_file_up" />
+
+                <TextView
+                    android:id="@+id/tv_job_file_name"
+                    style="@style/OneStopJobValue"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/onestop_job_no_file" />
+
+                <!-- Resultado de la carga: OK, error de lectura o campos que quedaron genéricos -->
+                <TextView
+                    android:id="@+id/tv_job_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/nx_caution"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- Turbina -->
+            <LinearLayout style="@style/OneStopJobCard">
+                <TextView style="@style/OneStopJobSection" android:text="@string/onestop_job_section_turbine" />
+                <TextView
+                    android:id="@+id/tv_job_turbine_name"
+                    style="@style/OneStopJobValue"
+                    android:text="@string/onestop_job_value_none" />
+                <TextView
+                    android:id="@+id/tv_job_turbine_model"
+                    style="@style/OneStopJobLabel"
+                    android:text="@string/onestop_job_value_none" />
+                <!-- Longitud de pala que ya pide la app (rotorDiameter = 2 x longitud) -->
+                <TextView
+                    android:id="@+id/tv_job_blade_length"
+                    style="@style/OneStopJobLabel"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/onestop_job_blade_length_none" />
+            </LinearLayout>
+
+            <!-- Altura de buje: OBLIGATORIA, sin valor por defecto y no viene en el .job -->
+            <LinearLayout style="@style/OneStopJobCard">
+                <TextView style="@style/OneStopJobSection" android:text="@string/onestop_job_section_hub_height" />
+                <EditText
+                    android:id="@+id/et_hub_height"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_nx_field_accent"
+                    android:fontFamily="monospace"
+                    android:hint="@string/onestop_job_hub_height_hint"
+                    android:imeOptions="actionDone"
+                    android:importantForAutofill="no"
+                    android:inputType="numberDecimal"
+                    android:maxLength="6"
+                    android:paddingHorizontal="12dp"
+                    android:textColor="@color/nx_fg"
+                    android:textColorHint="@color/nx_fg_muted"
+                    android:textSize="16sp" />
+                <!-- Validación: vacío, fuera de rango o menor que la longitud de pala -->
+                <TextView
+                    android:id="@+id/tv_job_hub_height_error"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/nx_critical"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- Dron detectado al enlazar -->
+            <LinearLayout style="@style/OneStopJobCard">
+                <TextView style="@style/OneStopJobSection" android:text="@string/onestop_job_section_drone" />
+                <TextView
+                    android:id="@+id/tv_job_drone"
+                    style="@style/OneStopJobValue"
+                    android:text="@string/onestop_job_drone_none" />
+                <!-- Solo visible si no se reconoce el dron enlazado: el piloto lo elige del catálogo -->
+                <Spinner
+                    android:id="@+id/spinner_job_drone"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_nx_spinner"
+                    android:paddingEnd="30dp"
+                    android:popupBackground="@color/nx_surface_raised"
+                    android:visibility="gone" />
+                <!-- Solo visible si el dron admite varias cámaras (M400, M350, M300) o no se reconoce el modelo -->
+                <TextView
+                    android:id="@+id/tv_job_payload_label"
+                    style="@style/OneStopJobLabel"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/onestop_job_payload"
+                    android:visibility="gone" />
+                <Spinner
+                    android:id="@+id/spinner_job_payload"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_nx_spinner"
+                    android:paddingEnd="30dp"
+                    android:popupBackground="@color/nx_surface_raised"
+                    android:visibility="gone" />
+                <!-- Lente de luz visible con la que se inspecciona (solo si la cámara tiene más de una) -->
+                <TextView
+                    android:id="@+id/tv_job_lens_label"
+                    style="@style/OneStopJobLabel"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/onestop_job_lens"
+                    android:visibility="gone" />
+                <Spinner
+                    android:id="@+id/spinner_job_lens"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_nx_spinner"
+                    android:paddingEnd="30dp"
+                    android:popupBackground="@color/nx_surface_raised"
+                    android:visibility="gone" />
+                <!-- Campo de visión que usará el plan con la cámara/lente elegidas -->
+                <TextView
+                    android:id="@+id/tv_job_fov"
+                    style="@style/OneStopJobLabel"
+                    android:layout_marginTop="6dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ===== Columna derecha: dimensiones de la turbina ===== -->
+        <LinearLayout
+            android:id="@+id/col_job_right"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@id/tv_job_title"
+            app:layout_constraintStart_toEndOf="@id/col_job_left"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_weight="1">
+
+            <LinearLayout style="@style/OneStopJobCard">
+                <TextView style="@style/OneStopJobSection" android:text="@string/onestop_job_section_dimensions" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/onestop_job_legend"
+                    android:textColor="@color/nx_fg_muted"
+                    android:textSize="11sp" />
+
+                <TableLayout
+                    android:id="@+id/table_job_dimensions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:stretchColumns="1"
+                    android:divider="@drawable/nx_divider"
+                    android:showDividers="middle">
+
+                    <TableRow android:paddingVertical="6dp">
+                        <TextView style="@style/OneStopJobLabel" android:text="@string/onestop_job_f_rotor_diameter" />
+                        <TextView android:id="@+id/tv_job_rotor_diameter" style="@style/OneStopJobCell" android:text="@string/onestop_job_value_none" />
+                    </TableRow>
+                    <TableRow android:paddingVertical="6dp">
+                        <TextView style="@style/OneStopJobLabel" android:text="@string/onestop_job_f_hub_length" />
+                        <TextView android:id="@+id/tv_job_hub_length" style="@style/OneStopJobCell" android:text="@string/onestop_job_value_none" />
+                    </TableRow>
+                    <TableRow android:paddingVertical="6dp">
+                        <TextView style="@style/OneStopJobLabel" android:text="@string/onestop_job_f_blade_flange_radius" />
+                        <TextView android:id="@+id/tv_job_blade_flange_radius" style="@style/OneStopJobCell" android:text="@string/onestop_job_value_none" />
+                    </TableRow>
+                    <TableRow android:paddingVertical="6dp">
+                        <TextView style="@style/OneStopJobLabel" android:text="@string/onestop_job_f_blade_max_chord" />
+                        <TextView android:id="@+id/tv_job_blade_max_chord" style="@style/OneStopJobCell" android:text="@string/onestop_job_value_none" />
+                    </TableRow>
+                    <TableRow android:paddingVertical="6dp">
+                        <TextView style="@style/OneStopJobLabel" android:text="@string/onestop_job_f_hub_to_flange" />
+                        <TextView android:id="@+id/tv_job_hub_to_flange" style="@style/OneStopJobCell" android:text="@string/onestop_job_value_none" />
+                    </TableRow>
+                    <TableRow android:paddingVertical="6dp">
+                        <TextView style="@style/OneStopJobLabel" android:text="@string/onestop_job_f_hub_to_max_chord" />
+                        <TextView android:id="@+id/tv_job_hub_to_max_chord" style="@style/OneStopJobCell" android:text="@string/onestop_job_value_none" />
+                    </TableRow>
+                    <TableRow android:paddingVertical="6dp">
+                        <TextView style="@style/OneStopJobLabel" android:text="@string/onestop_job_f_blade_tilt" />
+                        <TextView android:id="@+id/tv_job_blade_tilt" style="@style/OneStopJobCell" android:text="@string/onestop_job_value_none" />
+                    </TableRow>
+                    <TableRow android:paddingVertical="6dp">
+                        <TextView style="@style/OneStopJobLabel" android:text="@string/onestop_job_f_rotor_axis" />
+                        <TextView android:id="@+id/tv_job_rotor_axis" style="@style/OneStopJobCell" android:text="@string/onestop_job_value_none" />
+                    </TableRow>
+                    <TableRow android:paddingVertical="6dp">
+                        <TextView style="@style/OneStopJobLabel" android:text="@string/onestop_job_f_tower_to_hub" />
+                        <TextView android:id="@+id/tv_job_tower_to_hub" style="@style/OneStopJobCell" android:text="@string/onestop_job_value_none" />
+                    </TableRow>
+                    <TableRow android:paddingVertical="6dp">
+                        <TextView style="@style/OneStopJobLabel" android:text="@string/onestop_job_f_tower_bottom_r" />
+                        <TextView android:id="@+id/tv_job_tower_bottom_r" style="@style/OneStopJobCell" android:text="@string/onestop_job_value_none" />
+                    </TableRow>
+                    <TableRow android:paddingVertical="6dp">
+                        <TextView style="@style/OneStopJobLabel" android:text="@string/onestop_job_f_tower_top_r" />
+                        <TextView android:id="@+id/tv_job_tower_top_r" style="@style/OneStopJobCell" android:text="@string/onestop_job_value_none" />
+                    </TableRow>
+                    <TableRow android:paddingVertical="6dp">
+                        <TextView style="@style/OneStopJobLabel" android:text="@string/onestop_job_f_nacelle" />
+                        <TextView android:id="@+id/tv_job_nacelle" style="@style/OneStopJobCell" android:text="@string/onestop_job_value_none" />
+                    </TableRow>
+                </TableLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ===== Acciones ===== -->
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier_job_columns"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="col_job_left,col_job_right" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="end"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/barrier_job_columns"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_job_cancel"
+                style="@style/Nx.Button.Secondary"
+                android:layout_width="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:paddingHorizontal="22dp"
+                android:text="@string/onestop_job_cancel" />
+
+            <!-- Habilitado solo con altura de buje válida; al confirmar se calcula el plan -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_job_confirm"
+                style="@style/Nx.Button.Primary"
+                android:layout_width="wrap_content"
+                android:enabled="false"
+                android:paddingHorizontal="26dp"
+                android:text="@string/onestop_job_confirm" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

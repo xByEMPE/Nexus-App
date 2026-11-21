@@ -1,0 +1,1 @@
+[["wait",800],["eval","__op.jump(2); __op.clock=5.5; 1"],["wait",250],["shot","C:/Users/airsc/Documents/Nexus App/docs/animacion-onestop/shots/m3.png",null,1],["scroll",".op-panel"],["shot","C:/Users/airsc/Documents/Nexus App/docs/animacion-onestop/shots/m3b.png",".op",1]]

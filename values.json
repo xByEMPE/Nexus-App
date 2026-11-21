@@ -1,0 +1,157 @@
+{
+  "context": "DJI WPML unified configuration mapping (Enum Values and Camera FOV)",
+  "drones": {
+    "Matrice_400": {
+      "wpml:droneEnumValue": 103,
+      "wpml:droneSubEnumValue": 0,
+      "wpml:payloadPositionIndex": 0,
+      "payloads": {
+        "Zenmuse_P1": {
+          "wpml:payloadEnumValue": 50,
+          "cameraFov": {
+            "lens_24mm": 84.0,
+            "lens_35mm_standard": 63.5,
+            "lens_50mm": 46.8
+          }
+        },
+        "Zenmuse_H30": {
+          "wpml:payloadEnumValue": 82,
+          "cameraFov": {
+            "wide_camera": 82.1,
+            "zoom_camera_base": 66.0
+          }
+        },
+        "Zenmuse_H30T": {
+          "wpml:payloadEnumValue": 83,
+          "cameraFov": {
+            "wide_camera": 82.1,
+            "zoom_camera_base": 66.0,
+            "thermal_camera": 70.6
+          }
+        }
+      }
+    },
+    "Matrice_4E": {
+      "wpml:droneEnumValue": 99,
+      "wpml:droneSubEnumValue": 0,
+      "wpml:payloadPositionIndex": 0,
+      "wpml:payloadEnumValue": 88,
+      "cameraFov": {
+        "wide_camera": 84.0,
+        "medium_tele_camera": 35.0
+      }
+    },
+    "Matrice_4T": {
+      "wpml:droneEnumValue": 99,
+      "wpml:droneSubEnumValue": 1,
+      "wpml:payloadPositionIndex": 0,
+      "wpml:payloadEnumValue": 89,
+      "cameraFov": {
+        "wide_camera": 82.0,
+        "tele_camera": 35.0
+      }
+    },
+    "Mavic_3E": {
+      "wpml:droneEnumValue": 77,
+      "wpml:droneSubEnumValue": 0,
+      "wpml:payloadPositionIndex": 0,
+      "wpml:payloadEnumValue": 66,
+      "cameraFov": {
+        "wide_camera": 84.0,
+        "tele_camera": 15.0
+      }
+    },
+    "Mavic_3T": {
+      "wpml:droneEnumValue": 77,
+      "wpml:droneSubEnumValue": 1,
+      "wpml:payloadPositionIndex": 0,
+      "wpml:payloadEnumValue": 67,
+      "cameraFov": {
+        "wide_camera": 84.0,
+        "tele_camera": 15.0,
+        "thermal_camera": 61.0
+      }
+    },
+    "Matrice_300_RTK": {
+      "wpml:droneEnumValue": 60,
+      "wpml:droneSubEnumValue": 0,
+      "wpml:payloadPositionIndex": 0,
+      "payloads": {
+        "Zenmuse_P1": {
+          "wpml:payloadEnumValue": 50,
+          "cameraFov": {
+            "lens_24mm": 84.0,
+            "lens_35mm_standard": 63.5,
+            "lens_50mm": 46.8
+          }
+        },
+        "Zenmuse_H30": {
+          "wpml:payloadEnumValue": 82,
+          "cameraFov": {
+            "wide_camera": 82.1,
+            "zoom_camera_base": 66.0
+          }
+        },
+        "Zenmuse_H30T": {
+          "wpml:payloadEnumValue": 83,
+          "cameraFov": {
+            "wide_camera": 82.1,
+            "zoom_camera_base": 66.0,
+            "thermal_camera": 70.6
+          }
+        }
+      }
+    },
+    "Matrice_350_RTK": {
+      "wpml:droneEnumValue": 89,
+      "wpml:droneSubEnumValue": 0,
+      "wpml:payloadPositionIndex": 0,
+      "payloads": {
+        "Zenmuse_P1": {
+          "wpml:payloadEnumValue": 50,
+          "cameraFov": {
+            "lens_24mm": 84.0,
+            "lens_35mm_standard": 63.5,
+            "lens_50mm": 46.8
+          }
+        },
+        "Zenmuse_H30": {
+          "wpml:payloadEnumValue": 82,
+          "cameraFov": {
+            "wide_camera": 82.1,
+            "zoom_camera_base": 66.0
+          }
+        },
+        "Zenmuse_H30T": {
+          "wpml:payloadEnumValue": 83,
+          "cameraFov": {
+            "wide_camera": 82.1,
+            "zoom_camera_base": 66.0,
+            "thermal_camera": 70.6
+          }
+        }
+      }
+    },
+    "Matrice_M30": {
+      "wpml:droneEnumValue": 67,
+      "wpml:droneSubEnumValue": 0,
+      "wpml:payloadPositionIndex": 0,
+      "wpml:payloadEnumValue": 52,
+      "cameraFov": {
+        "wide_camera": 84.0,
+        "zoom_camera_base": 65.0
+      }
+    },
+    "Matrice_M30T": {
+      "wpml:droneEnumValue": 67,
+      "wpml:droneSubEnumValue": 1,
+      "wpml:payloadPositionIndex": 0,
+      "wpml:payloadEnumValue": 53,
+      "cameraFov": {
+        "wide_camera": 84.0,
+        "zoom_camera_base": 65.0,
+        "thermal_camera": 61.0
+      }
+    }
+  }
+}

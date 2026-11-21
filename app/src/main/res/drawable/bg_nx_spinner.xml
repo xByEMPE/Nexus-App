@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fondo de spinner Nexus: campo + flecha a la derecha -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/bg_nx_field" />
+    <item
+        android:width="16dp"
+        android:height="16dp"
+        android:end="10dp"
+        android:gravity="end|center_vertical"
+        android:drawable="@drawable/ic_nx_chevron_down_muted" />
+</layer-list>

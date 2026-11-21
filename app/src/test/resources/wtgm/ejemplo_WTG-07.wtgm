@@ -1,0 +1,81 @@
+{
+  "format": "wtgm",
+  "formatVersion": 1,
+  "mimeType": "application/vnd.wtgsurvey.geometry+json",
+  "createdAt": "2026-10-24T02:02:43.960Z",
+  "generator": "WtgCalibrator/1.0",
+  "turbine": {
+    "id": "WTG-07",
+    "type": "V112",
+    "windpark": "Windy Heights",
+    "powerRating": "3.45 MW",
+    "rotorDiameter": null,
+    "towerHeight": 94,
+    "bladeLength": 54.65,
+    "bladeLengthRef": "flange"
+  },
+  "geometry": {
+    "hubLength": 2.5,
+    "bladeFlangeRadius": 1.255,
+    "bladeMaxChordWidth": 3.8,
+    "hubCenterToBladeFlange": 2,
+    "hubCenterToMaxChordWidth": 12.4,
+    "bladeTiltAngle": 4.5,
+    "rotorAxisAngle": 9,
+    "towerCenterToHubCenter": 3,
+    "towerBottomRadius": 3,
+    "towerTopRadius": 2,
+    "nacelleThickness": 2.5
+  },
+  "units": {
+    "hubLength": "m",
+    "bladeFlangeRadius": "m",
+    "bladeMaxChordWidth": "m",
+    "hubCenterToBladeFlange": "m",
+    "hubCenterToMaxChordWidth": "m",
+    "bladeTiltAngle": "deg",
+    "rotorAxisAngle": "deg",
+    "towerCenterToHubCenter": "m",
+    "towerBottomRadius": "m",
+    "towerTopRadius": "m",
+    "nacelleThickness": "m"
+  },
+  "uncertainty": {
+    "hubLength": 0.0716,
+    "bladeFlangeRadius": 0.0357,
+    "bladeMaxChordWidth": 0.0667,
+    "hubCenterToBladeFlange": 0.0587,
+    "hubCenterToMaxChordWidth": 0.0629,
+    "bladeTiltAngle": 0.4154,
+    "rotorAxisAngle": 0.4151,
+    "towerCenterToHubCenter": 0.0504,
+    "towerBottomRadius": 0.0967,
+    "towerTopRadius": 0.0339,
+    "nacelleThickness": 0.0604
+  },
+  "quality": {
+    "method": "manual",
+    "sigmaPx": 2,
+    "axisSource": "nacelle_roof",
+    "scaleMetersPerPixel": 0.025,
+    "rotorRadiusErrorPct": null,
+    "warnings": []
+  },
+  "sources": {
+    "photo1": {
+      "fileName": "foto1.jpg",
+      "width": 4000,
+      "height": 3000
+    },
+    "photo2": {
+      "fileName": "foto2.jpg",
+      "width": 3000,
+      "height": 4000
+    }
+  },
+  "checksum": {
+    "algorithm": "SHA-256",
+    "canonical": "fields-4dp-v1",
+    "value": "913c4787efe2ee11fd2a30c6ee761226453be49b9bd2df9d9f34e3275efb596d"
+  }
+}

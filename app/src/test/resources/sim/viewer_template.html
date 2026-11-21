@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visor de vuelo virtual</title>
+<style>
+  :root {
+    --bg: #0e1116; --panel: #151a22; --line: #262d38; --text: #e6e9ee; --muted: #8b95a5; --accent: #4cc2ff;
+    --ok: #30a46c; --warn: #f5a524; --bad: #e5484d;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .app { display: grid; grid-template-columns: 1fr 310px; grid-template-rows: 1fr auto; height: 100%; }
+  .stage { position: relative; min-width: 0; min-height: 0; }
+  canvas#c { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+  canvas#c.drag { cursor: grabbing; }
+  .hud { position: absolute; left: 12px; top: 10px; pointer-events: none; font-size: 12px; color: var(--muted); }
+  .hud b { color: var(--text); font-weight: 600; }
+  aside { grid-row: 1 / 3; grid-column: 2; background: var(--panel); border-left: 1px solid var(--line); overflow: auto; padding: 14px; }
+  h1 { font-size: 15px; margin: 0 0 2px; }
+  h2 { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 16px 0 6px; font-weight: 600; }
+  .sub { color: var(--muted); margin-bottom: 8px; }
+  .kv { display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; }
+  .kv span:nth-child(odd) { color: var(--muted); }
+  .kv span:nth-child(even) { text-align: right; font-variant-numeric: tabular-nums; }
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 9px; font-size: 11px; font-weight: 600; }
+  .tag.ok { background: color-mix(in srgb, var(--ok) 22%, transparent); color: var(--ok); }
+  .tag.bad { background: color-mix(in srgb, var(--bad) 22%, transparent); color: var(--bad); }
+  ul.viol { margin: 6px 0 0; padding-left: 16px; color: var(--bad); }
+  label.chk { display: flex; align-items: center; gap: 8px; padding: 2px 0; cursor: pointer; }
+  .sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .legend { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin: 6px 0 2px; }
+  .legend i { flex: 1; }
+  .legend-l { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+  .bar { grid-column: 1; border-top: 1px solid var(--line); background: var(--panel); padding: 8px 12px; display: grid; gap: 6px; }
+  .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  button { background: #1d2430; color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 5px 11px; font: inherit; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button.on { border-color: var(--accent); color: var(--accent); }
+  input[type=range] { flex: 1; min-width: 160px; accent-color: var(--accent); }
+  canvas#chart { width: 100%; height: 46px; display: block; cursor: pointer; border-radius: 4px; background: #11161d; }
+  .mono { font-variant-numeric: tabular-nums; }
+  @media (max-width: 760px) { .app { grid-template-columns: 1fr; grid-template-rows: 60vh auto auto; } aside { grid-row: 3; grid-column: 1; border-left: 0; border-top: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="stage">
+    <canvas id="c"></canvas>
+    <div class="hud" id="hud"></div>
+  </div>
+  <aside>
+    <h1 id="title"></h1>
+    <div class="sub" id="subtitle"></div>
+    <div id="verdict"></div>
+
+    <h2>Resultado</h2>
+    <div class="kv" id="stats"></div>
+
+    <h2>Cobertura de palas</h2>
+    <div class="kv" id="cover"></div>
+
+    <h2>Holgura a la turbina</h2>
+    <div class="legend" id="legend"></div>
+    <div class="legend-l"><span>≤ 4.5 m</span><span>12 m</span><span>≥ 25 m</span></div>
+
+    <h2>Capas</h2>
+    <label class="chk"><input type="checkbox" id="l-path" checked> Trayectoria (color = holgura)</label>
+    <label class="chk"><input type="checkbox" id="l-wp" checked> Waypoints</label>
+    <label class="chk"><input type="checkbox" id="l-photo"> Fotos (encuadre)</label>
+    <label class="chk"><input type="checkbox" id="l-cov" checked> Puntos de cobertura</label>
+    <label class="chk"><input type="checkbox" id="l-grid" checked> Suelo</label>
+
+    <h2>Ahora</h2>
+    <div class="kv" id="now"></div>
+  </aside>
+  <div class="bar">
+    <div class="row">
+      <button id="play">▶ Reproducir</button>
+      <span>Velocidad</span>
+      <button data-speed="1">×1</button><button data-speed="10">×10</button><button data-speed="30" class="on">×30</button><button data-speed="100">×100</button>
+      <span style="flex:1"></span>
+      <button data-view="front">Frente</button><button data-view="side">Lado</button><button data-view="top">Arriba</button>
+      <button id="follow">Seguir dron</button>
+    </div>
+    <input type="range" id="seek" min="0" value="0" step="1">
+    <canvas id="chart"></canvas>
+  </div>
+</div>
+
+<script>
+const D = /*DATA*/null/*END*/;
+
+// ───────────── utilidades vectoriales ─────────────
+const v3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const mul = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const norm = a => Math.hypot(a[0], a[1], a[2]);
+const unit = a => { const n = norm(a) || 1; return mul(a, 1 / n); };
+const rad = d => d * Math.PI / 180;
+// Dirección de visión: rumbo 0 = Norte, +90 = Este; pitch negativo = hacia abajo (igual que el planificador).
+const viewDir = (yawDeg, pitchDeg) => { const y = rad(yawDeg), p = rad(pitchDeg); return [Math.cos(p) * Math.sin(y), Math.cos(p) * Math.cos(y), Math.sin(p)]; };
+
+// ───────────── escena estática ─────────────
+const BLADE_COLORS = { TWELVE: '#4cc2ff', FOUR: '#ffb454', EIGHT: '#b794f6' };
+const SOLID_COLOR = n => n.startsWith('Blade-') ? BLADE_COLORS[n.slice(6)] : n === 'Tower' ? '#7d8795' : n === 'Nacelle' ? '#9aa4b2' : '#c9d1dc';
+
+function ring(c, axis, r, n = 20) {
+  const a = Math.abs(axis[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0];
+  const u = unit(cross(axis, a)), w = cross(axis, u);
+  const pts = [];
+  for (let i = 0; i < n; i++) { const t = 2 * Math.PI * i / n; pts.push(add(c, add(mul(u, r * Math.cos(t)), mul(w, r * Math.sin(t))))); }
+  return pts;
+}
+const segs = []; // {a, b, color}
+for (const s of D.solids) {
+  const axis = unit(v3(s.b, s.a)), col = SOLID_COLOR(s.n);
+  const r0 = ring(s.a, axis, s.ra), r1 = ring(s.b, axis, s.rb);
+  for (let i = 0; i < r0.length; i++) {
+    const j = (i + 1) % r0.length;
+    if (s.ra > 0.01) segs.push({ a: r0[i], b: r0[j], color: col });
+    if (s.rb > 0.01) segs.push({ a: r1[i], b: r1[j], color: col });
+    if (i % 4 === 0) segs.push({ a: r0[i], b: r1[i], color: col });
+  }
+}
+// Encuadre: trayectoria + rotor (la torre entera no manda; se ve de sobra al alejar la cámara).
+const allPts = D.solids.filter(s => s.n !== 'Tower').flatMap(s => [s.a, s.b]).concat(D.samples.map(s => [s[1], s[2], s[3]]));
+const lo = [0, 1, 2].map(k => Math.min(...allPts.map(p => p[k]))), hi = [0, 1, 2].map(k => Math.max(...allPts.map(p => p[k])));
+const center = mul(add(lo, hi), 0.5), extent = Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]);
+const nacelle = D.solids.find(s => s.n === 'Nacelle');
+const front = unit(((f) => [f[0], f[1], 0])(v3(nacelle.b, nacelle.a))); // hacia dónde mira el rotor
+
+// ───────────── trayectoria coloreada por holgura ─────────────
+const D_MIN = 4.5, D_MAX = 25, NB = 10;
+function lerpC(c0, c1, t) { return c0.map((v, i) => Math.round(v + (c1[i] - v) * t)); }
+const RAMP = [[229, 72, 77], [245, 165, 36], [48, 164, 108]];
+function distColor(d) {
+  const t = Math.min(1, Math.max(0, (d - D_MIN) / (D_MAX - D_MIN)));
+  const c = t < 0.5 ? lerpC(RAMP[0], RAMP[1], t / 0.5) : lerpC(RAMP[1], RAMP[2], (t - 0.5) / 0.5);
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+const bucketOf = d => Math.min(NB - 1, Math.max(0, Math.floor((d - D_MIN) / (D_MAX - D_MIN) * NB)));
+const buckets = Array.from({ length: NB }, () => []);
+for (let i = 1; i < D.samples.length; i++) {
+  const p = D.samples[i - 1], q = D.samples[i];
+  buckets[bucketOf(Math.min(p[7], q[7]))].push({ i, a: [p[1], p[2], p[3]], b: [q[1], q[2], q[3]] });
+}
+document.getElementById('legend').innerHTML = Array.from({ length: NB }, (_, k) => `<i style="background:${distColor(D_MIN + (k + 0.5) * (D_MAX - D_MIN) / NB)}"></i>`).join('');
+
+// ───────────── cámara ─────────────
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+let W = 0, H = 0;
+const cam = { yaw: Math.atan2(front[0], -front[1]) + 0.5, pitch: 0.25, dist: extent * 1.6, target: center.slice() };
+const FOV = rad(50), NEAR = 0.5;
+function basis() {
+  const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+  const pos = add(cam.target, mul([Math.sin(cam.yaw) * cp, -Math.cos(cam.yaw) * cp, sp], cam.dist));
+  const f = unit(v3(cam.target, pos)), right = unit(cross(f, [0, 0, 1])), up = cross(right, f);
+  return { pos, f, right, up, focal: (H / 2) / Math.tan(FOV / 2) };
+}
+let B = null;
+function toCam(p) { const v = v3(p, B.pos); return [dot(v, B.right), dot(v, B.up), dot(v, B.f)]; }
+function scr(c) { return [W / 2 + c[0] / c[2] * B.focal, H / 2 - c[1] / c[2] * B.focal]; }
+function clip(a, b) { // recorte contra el plano cercano
+  if (a[2] < NEAR && b[2] < NEAR) return null;
+  if (a[2] < NEAR) { const t = (NEAR - a[2]) / (b[2] - a[2]); a = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, NEAR]; }
+  else if (b[2] < NEAR) { const t = (NEAR - b[2]) / (a[2] - b[2]); b = [b[0] + (a[0] - b[0]) * t, b[1] + (a[1] - b[1]) * t, NEAR]; }
+  return [scr(a), scr(b)];
+}
+function seg(a, b) { const r = clip(toCam(a), toCam(b)); if (r) { ctx.moveTo(r[0][0], r[0][1]); ctx.lineTo(r[1][0], r[1][1]); } }
+function stroke(color, width, alpha = 1) { ctx.strokeStyle = color; ctx.lineWidth = width; ctx.globalAlpha = alpha; ctx.stroke(); ctx.globalAlpha = 1; }
+function dotAt(p, r, fill, alpha = 1) {
+  const c = toCam(p); if (c[2] < NEAR) return null;
+  const s = scr(c); ctx.globalAlpha = alpha; ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(s[0], s[1], r, 0, 6.2832); ctx.fill(); ctx.globalAlpha = 1; return s;
+}
+function frustum(pos, yaw, pitch, L) {
+  const f = viewDir(yaw, pitch), right = unit(cross(f, [0, 0, 1])), up = cross(right, f);
+  const hw = L * Math.tan(rad(D.cam.h / 2)), hh = L * Math.tan(rad(D.cam.v / 2)), c = add(pos, mul(f, L));
+  const k = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, y]) => add(c, add(mul(right, x * hw), mul(up, y * hh))));
+  return { c, k };
+}
+
+// ───────────── estado de reproducción ─────────────
+const S = D.samples, N = S.length;
+const st = { i: 0, playing: false, speed: 30, follow: false, t: S[0][0] };
+const el = id => document.getElementById(id);
+const seek = el('seek'); seek.max = N - 1;
+
+function render() {
+  B = basis();
+  ctx.clearRect(0, 0, W, H);
+  // suelo
+  if (el('l-grid').checked) {
+    ctx.beginPath(); const g = 10, span = Math.ceil(extent / g / 2) * g * 1.2, z = lo[2];
+    for (let x = -span; x <= span; x += g) { seg([center[0] + x, center[1] - span, z], [center[0] + x, center[1] + span, z]); seg([center[0] - span, center[1] + x, z], [center[0] + span, center[1] + x, z]); }
+    stroke('#2a323e', 1, 0.7);
+  }
+  // turbina
+  const byColor = {}; for (const s of segs) (byColor[s.color] ||= []).push(s);
+  for (const [color, list] of Object.entries(byColor)) { ctx.beginPath(); for (const s of list) seg(s.a, s.b); stroke(color, 1.2, 0.9); }
+  // trayectoria
+  if (el('l-path').checked) {
+    buckets.forEach((list, k) => {
+      const col = distColor(D_MIN + (k + 0.5) * (D_MAX - D_MIN) / NB);
+      ctx.beginPath(); for (const s of list) if (s.i > st.i) seg(s.a, s.b); stroke(col, 1, 0.22);
+      ctx.beginPath(); for (const s of list) if (s.i <= st.i) seg(s.a, s.b); stroke(col, 1.8, 1);
+    });
+  }
+  if (el('l-cov').checked) for (const c of D.coverage) dotAt(c.p, 2, c.c ? '#30a46c' : '#e5484d', 0.9);
+  if (el('l-wp').checked) for (const w of D.waypoints) dotAt(w.p, w.i ? 2.4 : 1.6, w.i ? (BLADE_COLORS[w.b] || '#cfd6df') : '#6b7686', 0.95);
+  if (el('l-photo').checked) {
+    ctx.beginPath();
+    for (const p of D.photos) { const f = frustum(p.p, p.yaw, p.pitch, 3); for (let j = 0; j < 4; j++) { seg(p.p, f.k[j]); seg(f.k[j], f.k[(j + 1) % 4]); } }
+    stroke('#4cc2ff', 0.8, 0.35);
+  }
+  // dron
+  const s = S[st.i], pos = [s[1], s[2], s[3]];
+  const f = frustum(pos, s[4], s[5], 18);
+  ctx.beginPath(); for (let j = 0; j < 4; j++) { seg(pos, f.k[j]); seg(f.k[j], f.k[(j + 1) % 4]); } stroke('#ffffff', 1, 0.8);
+  ctx.beginPath(); seg(pos, add(pos, mul(viewDir(s[4], s[5]), 40))); stroke('#ff4d4f', 1.2, 0.9);
+  const sp = dotAt(pos, 5, distColor(s[7]));
+  if (sp) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(sp[0], sp[1], 7, 0, 6.2832); ctx.stroke(); }
+  hud(s);
+}
+
+function hud(s) {
+  el('hud').innerHTML = `<b>${D.title}</b><br>arrastrar: orbitar · mayús/botón derecho: desplazar · rueda: zoom`;
+  const d = s[7];
+  el('now').innerHTML =
+    `<span>Tiempo</span><span>${fmtT(s[0])} / ${fmtT(S[N - 1][0])}</span>` +
+    `<span>Siguiente waypoint</span><span>${s[6]} / ${D.waypoints.length - 1}</span>` +
+    `<span>Altura</span><span>${s[3].toFixed(1)} m</span>` +
+    `<span>Rumbo / gimbal</span><span>${s[4].toFixed(0)}° / ${s[5].toFixed(0)}°</span>` +
+    `<span>Distancia a turbina</span><span style="color:${distColor(d)};font-weight:600">${d.toFixed(1)} m</span>`;
+  seek.value = st.i;
+  drawChart();
+}
+const fmtT = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+
+// ───────────── gráfico de holgura ─────────────
+const ch = el('chart'), cx = ch.getContext('2d');
+function drawChart() {
+  const w = ch.clientWidth, h = ch.clientHeight, dpr = devicePixelRatio || 1;
+  if (ch.width !== Math.round(w * dpr)) { ch.width = Math.round(w * dpr); ch.height = Math.round(h * dpr); }
+  cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.clearRect(0, 0, w, h);
+  const dmax = Math.max(40, ...S.map(s => Math.min(s[7], 60)));
+  const X = i => i / (N - 1) * w, Y = d => h - 3 - Math.min(d, dmax) / dmax * (h - 6);
+  cx.strokeStyle = '#e5484d'; cx.globalAlpha = 0.6; cx.setLineDash([4, 3]); cx.beginPath(); cx.moveTo(0, Y(D_MIN)); cx.lineTo(w, Y(D_MIN)); cx.stroke(); cx.setLineDash([]); cx.globalAlpha = 1;
+  cx.strokeStyle = '#8b95a5'; cx.lineWidth = 1; cx.beginPath();
+  const step = Math.max(1, Math.floor(N / w));
+  for (let i = 0; i < N; i += step) i ? cx.lineTo(X(i), Y(S[i][7])) : cx.moveTo(X(i), Y(S[i][7]));
+  cx.stroke();
+  cx.strokeStyle = '#4cc2ff'; cx.lineWidth = 1.5; cx.beginPath(); cx.moveTo(X(st.i), 0); cx.lineTo(X(st.i), h); cx.stroke();
+}
+
+// ───────────── panel ─────────────
+(function panel() {
+  const m = D.summary;
+  el('title').textContent = D.title;
+  el('subtitle').textContent = `${m.waypoints} waypoints · ${m.photos} fotos · pala ${D.bladeLength.toFixed(0)} m · buje ${D.hubHeight.toFixed(0)} m`;
+  const ok = m.violations.length === 0;
+  el('verdict').innerHTML = `<span class="tag ${ok ? 'ok' : 'bad'}">${ok ? 'Sin violaciones' : m.violations.length + ' violaciones'}</span>` +
+    (ok ? '' : '<ul class="viol">' + m.violations.slice(0, 8).map(v => `<li>${v}</li>`).join('') + '</ul>');
+  el('stats').innerHTML =
+    `<span>Distancia mínima</span><span>${m.minDistance.toFixed(2)} m (${m.minComponent})</span>` +
+    `<span>Tiempo de vuelo</span><span>${fmtT(m.flightTime)}</span>` +
+    `<span>Trayectoria</span><span>${m.pathLength.toFixed(0)} m</span>` +
+    (m.maxTrackingError > 0 ? `<span>Desvío por viento (máx / rms)</span><span>${m.maxTrackingError.toFixed(2)} / ${m.rmsTrackingError.toFixed(2)} m</span>` : '');
+  const names = { TWELVE: 'Pala 12 h', FOUR: 'Pala 4 h', EIGHT: 'Pala 8 h' };
+  el('cover').innerHTML = Object.entries(m.coverage).map(([b, c]) =>
+    `<span><i class="sw" style="background:${BLADE_COLORS[b]}"></i> ${names[b] || b}</span><span>${(c * 100).toFixed(1)} %</span>`).join('');
+})();
+
+// ───────────── eventos ─────────────
+function resize() {
+  const r = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  W = r.width; H = r.height; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); render();
+}
+addEventListener('resize', resize);
+let drag = null;
+cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, pan: e.shiftKey || e.button === 2 }; cv.setPointerCapture(e.pointerId); cv.classList.add('drag'); });
+cv.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY;
+  if (drag.pan) { B = basis(); const k = cam.dist / B.focal; cam.target = add(cam.target, add(mul(B.right, -dx * k), mul(B.up, dy * k))); st.follow = false; el('follow').classList.remove('on'); }
+  else { cam.yaw -= dx * 0.006; cam.pitch = Math.max(-1.5, Math.min(1.5, cam.pitch + dy * 0.006)); }
+  render();
+});
+cv.addEventListener('pointerup', () => { drag = null; cv.classList.remove('drag'); });
+cv.addEventListener('contextmenu', e => e.preventDefault());
+cv.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(3, Math.min(extent * 6, cam.dist * Math.exp(e.deltaY * 0.0012))); render(); }, { passive: false });
+
+function setIndex(i) { st.i = Math.max(0, Math.min(N - 1, i)); st.t = S[st.i][0]; if (st.follow) cam.target = [S[st.i][1], S[st.i][2], S[st.i][3]]; render(); }
+seek.addEventListener('input', () => setIndex(+seek.value));
+ch.addEventListener('click', e => setIndex(Math.round(e.offsetX / ch.clientWidth * (N - 1))));
+el('play').addEventListener('click', () => { st.playing = !st.playing; if (st.playing && st.i >= N - 1) setIndex(0); el('play').textContent = st.playing ? '⏸ Pausa' : '▶ Reproducir'; last = performance.now(); });
+document.querySelectorAll('[data-speed]').forEach(b => b.addEventListener('click', () => {
+  st.speed = +b.dataset.speed; document.querySelectorAll('[data-speed]').forEach(x => x.classList.toggle('on', x === b));
+}));
+el('follow').addEventListener('click', () => { st.follow = !st.follow; el('follow').classList.toggle('on', st.follow); setIndex(st.i); });
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => {
+  const base = Math.atan2(front[0], -front[1]);
+  cam.target = center.slice(); st.follow = false; el('follow').classList.remove('on');
+  if (b.dataset.view === 'front') { cam.yaw = base; cam.pitch = 0.1; }
+  if (b.dataset.view === 'side') { cam.yaw = base + Math.PI / 2; cam.pitch = 0.1; }
+  if (b.dataset.view === 'top') { cam.pitch = 1.5; }
+  cam.dist = extent * 1.6; render();
+}));
+document.querySelectorAll('input[type=checkbox]').forEach(c => c.addEventListener('change', render));
+addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); el('play').click(); } if (e.code === 'ArrowRight') setIndex(st.i + 10); if (e.code === 'ArrowLeft') setIndex(st.i - 10); });
+
+let last = performance.now();
+function tick(now) {
+  if (st.playing) {
+    st.t += (now - last) / 1000 * st.speed;
+    if (st.t >= S[N - 1][0]) { st.t = S[N - 1][0]; st.playing = false; el('play').textContent = '▶ Reproducir'; }
+    let a = st.i, b = N - 1; while (a < b) { const m = (a + b + 1) >> 1; if (S[m][0] <= st.t) a = m; else b = m - 1; }
+    st.i = a; if (st.follow) cam.target = [S[a][1], S[a][2], S[a][3]]; render();
+  }
+  last = now; requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+// Parámetros en el hash (útiles para compartir una vista): #t=0.4&view=front|side|top&photos=1&follow=1
+(function fromHash() {
+  const q = new URLSearchParams(location.hash.slice(1));
+  if (q.get('photos') === '1') el('l-photo').checked = true;
+  const v = q.get('view'); if (v) document.querySelector(`[data-view=${v}]`)?.click();
+  if (q.get('follow') === '1') el('follow').click();
+  if (q.has('t')) setIndex(Math.round(parseFloat(q.get('t')) * (N - 1)));
+})();
+resize();
+</script>
+</body>
+</html>

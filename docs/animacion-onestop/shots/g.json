@@ -1,0 +1,1 @@
+[["wait",800],["eval","__op.jump(0); __op.clock=5.5; 1"],["wait",250],["shot","C:/Users/airsc/Documents/Nexus App/docs/animacion-onestop/shots/t1.png",null,2,[230,260,300,320]],["shot","C:/Users/airsc/Documents/Nexus App/docs/animacion-onestop/shots/t0.png",null,1]]

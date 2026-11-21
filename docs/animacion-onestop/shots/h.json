@@ -1,0 +1,4 @@
+[["wait",800],["eval","__op.pause(); __op.mode('three'); __op.jump(0); __op.clock=5.5; 1"],["wait",250],["shot","C:/Users/airsc/Documents/Nexus App/docs/animacion-onestop/shots/u0.png",null,1],
+ ["eval","__op.jump(1); __op.clock=7; 1"],["wait",250],["shot","C:/Users/airsc/Documents/Nexus App/docs/animacion-onestop/shots/u1.png",null,1],
+ ["eval","__op.jump(2); __op.clock=7; 1"],["wait",250],["shot","C:/Users/airsc/Documents/Nexus App/docs/animacion-onestop/shots/u2.png",null,1],
+ ["eval","__op.jump(6); __op.clock=3; 1"],["wait",250],["shot","C:/Users/airsc/Documents/Nexus App/docs/animacion-onestop/shots/u6.png",null,1]]

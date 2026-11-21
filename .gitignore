@@ -1,0 +1,33 @@
+*.iml
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+.superpowers/
+
+# Generados / locales
+.gradle/
+.kotlin/
+.idea/
+**/build/
+app/release/
+*.apk
+*.aab
+*.jks
+*.keystore
+
+# Fuera del repo (notas locales y código reconstruido de la auditoría)
+context.md
+rebuilt/
+
+# Log de campo de la época VND Fly (contiene la key vieja de DJI)
+docs/incidencias/2026-11-06_logcat.txt

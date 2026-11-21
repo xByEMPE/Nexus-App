@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nexus · Splash horizontal (vista previa)</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; background:#0b0b0e; color:#cfd3dc; font:14px/1.4 system-ui,sans-serif;
+         display:flex; flex-direction:column; align-items:center; gap:16px; padding:24px; min-height:100vh; box-sizing:border-box; }
+  .phone { border:2px solid #2a2d36; border-radius:28px; padding:8px; background:#000; max-width:100%; }
+  canvas { display:block; border-radius:20px; background:#000; max-width:100%; height:auto !important; }
+  .bar { display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:center; max-width:640px; }
+  button, select { background:#1a1d26; color:#e8ebf2; border:1px solid #2f3340; border-radius:8px; padding:8px 14px; font:inherit; cursor:pointer; }
+  button:hover { border-color:#2979ff; }
+  input[type=range] { width:300px; accent-color:#2979ff; }
+  .t { font-variant-numeric: tabular-nums; min-width:150px; text-align:center; }
+  small { color:#7d8292; max-width:560px; text-align:center; }
+</style>
+</head>
+<body>
+  <div class="phone"><canvas id="c"></canvas></div>
+  <div class="bar">
+    <button id="replay">↺ Repetir</button>
+    <button id="pause">❚❚ Pausa</button>
+    <select id="ar">
+      <option value="1.7778">16:9</option>
+      <option value="2.0556">19.5:9</option>
+      <option value="2.2222">20:9</option>
+      <option value="1.3333">4:3 (tableta)</option>
+    </select>
+  </div>
+  <div class="bar"><input id="scrub" type="range" min="0" max="5.8" step="0.01" value="0"><span class="t" id="tl"></span></div>
+  <small>Réplica de la animación de <code>NexusSplashScreen.kt</code> (misma línea de tiempo y fórmulas). Duración 5.8 s; límite 8 s.</small>
+
+<script>
+const TOTAL = 5.8;
+const BLUE = '#2979FF', DIV = '#3D5AFE', R2 = 0.70710678, DEG = Math.PI/180;
+const seg = (t,a,b) => Math.min(1, Math.max(0, (t-a)/(b-a)));
+const easeOut = x => 1 - Math.pow(1-x, 3);
+const easeOutBack = x => { const c1=1.70158, c3=c1+1, k=x-1; return 1 + c3*k*k*k + c1*k*k; };
+const clamp01 = x => Math.min(1, Math.max(0, x));
+
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+let W = 640, H = 360;
+
+function rgba(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${n>>16&255},${n>>8&255},${n&255},${clamp01(a)})`;
+}
+const white = a => `rgba(255,255,255,${clamp01(a)})`;
+
+function line(x1,y1,x2,y2,color,width,cap='butt'){
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = cap; ctx.stroke();
+}
+function circle(x,y,r,fill,stroke,width){
+  if (r <= 0) return;
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+  if (fill){ ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = width; ctx.stroke(); }
+}
+function arc(x,y,r,startDeg,sweepDeg,color,width,cap='butt'){
+  if (r <= 0) return;
+  ctx.beginPath(); ctx.arc(x,y,r,startDeg*DEG,(startDeg+sweepDeg)*DEG);
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = cap; ctx.stroke();
+}
+function poly(pts, fill, stroke, width){
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.closePath();
+  if (fill){ ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = width; ctx.lineJoin = 'miter'; ctx.stroke(); }
+}
+function tracked(text,cx,baseline,size,tracking,font,color,alphaFor=()=>1,dyFor=()=>0){
+  ctx.font = font.replace('{s}', size+'px');
+  ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+  const ws = [...text].map(ch => ctx.measureText(ch).width);
+  const total = ws.reduce((a,b)=>a+b,0) + tracking*(text.length-1);
+  let x = cx - total/2;
+  [...text].forEach((ch,i)=>{
+    const a = alphaFor(i);
+    if (a > 0.01){ ctx.fillStyle = color(a); ctx.fillText(ch, x, baseline + dyFor(i)); }
+    x += ws[i] + tracking;
+  });
+}
+
+function draw(t){
+  const w = W, h = H;
+  ctx.setTransform(cv.width/w,0,0,cv.height/h,0,0);
+  ctx.fillStyle = '#000'; ctx.fillRect(0,0,w,h);
+  const u = Math.min(h, w*0.5625), cx = w/2;
+  const g = 1 - seg(t, TOTAL-0.3, TOTAL);
+  const a = v => clamp01(v*g);
+  const chordW = Math.max(2, u*0.0042), webW = Math.max(1.5, u*0.0028), thin = Math.max(1.2, u*0.002);
+  const nr = u*0.0085;
+
+  // 1. retícula
+  const gridA = easeOut(seg(t,0,0.9)), step = u*0.05;
+  let k = 0;
+  for (let gx=0; gx<=w; gx+=step, k++) line(gx,0,gx,h, white(a(gridA*(k%5===0?0.07:0.035))), 1);
+  k = 0;
+  for (let gy0=0; gy0<=h; gy0+=step, k++) line(0,gy0,w,gy0, white(a(gridA*(k%5===0?0.07:0.035))), 1);
+
+  // 2. logo + escaneo
+  const logoY = h*0.26 + Math.sin(t*2.6)*u*0.005*seg(t,1.6,2.2);
+  const ls = 0.40*u/396;
+  const lp = (x,y) => [cx + x*ls, logoY + y*ls];
+
+  const glowA = seg(t,0.3,1.6);
+  const gr = ctx.createRadialGradient(cx,logoY,0,cx,logoY,u*0.5);
+  gr.addColorStop(0, rgba(BLUE, a(0.16*glowA))); gr.addColorStop(1, rgba(BLUE,0));
+  ctx.fillStyle = gr; ctx.fillRect(0,0,w,h);
+
+  const gy = h*0.90;
+  const sStart = 0.03*w - 0.02*u, sLen = 0.95*w + 0.04*u;
+  const scanP = seg(t,2.0,3.6), scanX = sStart + sLen*scanP;
+  const beamA = Math.min(seg(t,2.0,2.2), 1 - seg(t,3.45,3.7));
+  const lit = nx => clamp01((scanX-nx)/(0.05*u));
+  const litTime = nx => 2.0 + 1.6*((nx - sStart)/sLen);
+
+  function node(cx_, cy_, appear){
+    if (appear <= 0) return;
+    const l = lit(cx_);
+    if (l > 0) circle(cx_,cy_,nr*2.4, rgba(BLUE,a(0.22*l)));
+    circle(cx_,cy_,nr, `rgba(0,0,0,${a(appear)})`);
+    circle(cx_,cy_,nr, null, white(a(appear*(0.85-0.25*l))), Math.max(1.5,u*0.003));
+    if (l > 0) circle(cx_,cy_,nr*0.72*l, rgba(BLUE,a(l)));
+  }
+  function wire(x1,y1,x2,y2,sag,f,alpha,width,pulseOff){
+    if (f <= 0) return;
+    const n = 20;
+    ctx.beginPath(); ctx.moveTo(x1,y1);
+    for (let i=1;i<=n;i++){
+      const s = Math.min(i/n, f);
+      ctx.lineTo(x1+(x2-x1)*s, y1+(y2-y1)*s + sag*4*s*(1-s));
+      if (i/n >= f) break;
+    }
+    ctx.strokeStyle = white(a(alpha)); ctx.lineWidth = width; ctx.lineCap='butt'; ctx.stroke();
+    if (pulseOff >= 0 && f >= 1 && t > 3.0){
+      const s = ((t-3.0)*0.28 + pulseOff) % 1;
+      const px = x1+(x2-x1)*s, py = y1+(y2-y1)*s + sag*4*s*(1-s), pa = seg(t,3.0,3.4);
+      circle(px,py,u*0.012, rgba(BLUE,a(0.3*pa)));
+      circle(px,py,u*0.0045, rgba(BLUE,a(pa)));
+    }
+  }
+
+  // 3. suelo
+  const groundP = easeOut(seg(t,0.3,1.2));
+  line(0,gy,w*groundP,gy, white(a(0.55)), chordW);
+  for (let hx=0; hx<w*groundP; hx+=0.03*u) line(hx,gy,hx-0.012*u,gy+0.014*u, white(a(0.15)), thin);
+
+  // 4. aerogeneradores
+  const turbX = [0.09*w, 0.22*w], turbH = [0.40*u, 0.29*u], turbL = [0.18*u, 0.13*u], turbPh = [10, 55];
+  const spT = Math.max(0, t-1.4), spinW = 80*(spT + (Math.exp(-2*spT)-1)/2);
+  for (let i=0;i<2;i++){
+    const grow = easeOut(seg(t, 0.7+0.15*i, 1.5+0.15*i));
+    if (grow <= 0) continue;
+    const bx = turbX[i], hubY = gy - turbH[i]*grow, bw0 = 0.013*u, bw1 = 0.004*u;
+    line(bx-bw0,gy,bx-bw1,hubY, white(a(0.9)), webW*1.2);
+    line(bx+bw0,gy,bx+bw1,hubY, white(a(0.9)), webW*1.2);
+    for (let j=1;j<=4;j++){
+      const f = j/5, yy = gy-(gy-hubY)*f, hw = bw0+(bw1-bw0)*f;
+      line(bx-hw,yy,bx+hw,yy, white(a(0.35)), thin);
+    }
+    const bl = easeOut(seg(t, 1.2+0.15*i, 1.8+0.15*i));
+    if (bl > 0){
+      for (let j=0;j<3;j++){
+        const ang = (turbPh[i] + spinW + 120*j)*DEG, ca = Math.cos(ang), sa = Math.sin(ang);
+        const len = turbL[i]*bl, rw = 0.007*u*bl;
+        poly([[bx-sa*rw, hubY+ca*rw],[bx+ca*len, hubY+sa*len],[bx+sa*rw, hubY-ca*rw]], null, white(a(0.9*bl)), webW);
+      }
+    }
+    node(bx, hubY, bl);
+  }
+
+  // 5. campo solar
+  const arrX0 = 0.31*w, arrX1 = 0.60*w, nPan = 7, pitch = (arrX1-arrX0)/nPan;
+  const panW = pitch*0.8, panH = 0.05*u, skew = 0.012*u, panBottom = gy - 0.028*u;
+  for (let i=0;i<nPan;i++){
+    const ap = easeOut(seg(t, 0.9+0.1*i, 1.4+0.1*i));
+    if (ap <= 0) continue;
+    const x = arrX0 + pitch*i, yt = panBottom - panH*ap, l = lit(x+panW/2);
+    const pts = [[x,panBottom],[x+panW,panBottom],[x+panW+skew,yt],[x+skew,yt]];
+    if (l > 0) poly(pts, rgba(BLUE,a(0.22*l)));
+    poly(pts, null, white(a(0.85*ap)), webW);
+    for (let m=1;m<=2;m++){ const p = m/3; line(x+panW*p,panBottom,x+skew+panW*p,yt, white(a(0.35*ap)), thin); }
+    const ym = (panBottom+yt)/2;
+    line(x+skew/2,ym,x+panW+skew/2,ym, white(a(0.35*ap)), thin);
+    line(x+panW/2,panBottom,x+panW/2,gy, white(a(0.6*ap)), webW);
+    if (l > 0) line(x+skew,yt,x+panW+skew,yt, rgba(BLUE,a(l)), chordW);
+  }
+  const invX = arrX1 + 0.035*u, invTop = gy - 0.03*u, invA = easeOut(seg(t,1.5,2.0));
+  if (invA > 0){
+    ctx.strokeStyle = white(a(0.8*invA)); ctx.lineWidth = webW;
+    ctx.strokeRect(invX-0.0175*u, invTop, 0.035*u, 0.03*u);
+    node(invX, invTop, invA);
+  }
+
+  // 6. torres de transmisión
+  const pylX = [0.77*w, 0.93*w], hf = 0.30*u;
+  const lowY = gy-0.60*hf, lowA = 0.24*hf, upY = gy-0.78*hf, upA = 0.17*hf, ins = 0.035*hf;
+  for (let i=0;i<2;i++){
+    const grow = easeOut(seg(t, 1.0+0.15*i, 1.9+0.15*i));
+    if (grow <= 0) continue;
+    const bx = pylX[i], hh = hf*grow, b0 = 0.075*hh, b1 = 0.022*hh, bodyTop = 0.80*hh;
+    const hw = f => b0 + (b1-b0)*f;
+    const body = white(a(0.9)), brace = white(a(0.5));
+    line(bx-b0,gy,bx-b1,gy-bodyTop, body, webW*1.2);
+    line(bx+b0,gy,bx+b1,gy-bodyTop, body, webW*1.2);
+    line(bx-b1,gy-bodyTop,bx,gy-hh, body, webW);
+    line(bx+b1,gy-bodyTop,bx,gy-hh, body, webW);
+    for (let j=0;j<5;j++){
+      const f1 = j/5, f2 = (j+1)/5, y1 = gy-bodyTop*f1, y2 = gy-bodyTop*f2;
+      line(bx-hw(f1),y1,bx+hw(f2),y2, brace, thin);
+      line(bx+hw(f1),y1,bx-hw(f2),y2, brace, thin);
+      line(bx-hw(f2),y2,bx+hw(f2),y2, brace, thin);
+    }
+    const lowYs = gy-0.60*hh, upYs = gy-0.78*hh, lowAs = 0.24*hh, upAs = 0.17*hh, insS = 0.035*hh;
+    line(bx-lowAs,lowYs,bx+lowAs,lowYs, body, webW*1.2);
+    line(bx-upAs,upYs,bx+upAs,upYs, body, webW*1.2);
+    for (const s of [-1,1]){
+      line(bx+s*lowAs,lowYs,bx+s*lowAs,lowYs+insS, body, webW);
+      line(bx+s*upAs,upYs,bx+s*upAs,upYs+insS, body, webW);
+    }
+    node(bx, gy-hh, easeOut(seg(t, 1.5+0.15*i, 2.0+0.15*i)));
+  }
+
+  // 7. conductores
+  const cf = seg(t,1.9,2.6), sag = 0.018*u, p0 = pylX[0], p1 = pylX[1], farX = w*1.02;
+  wire(p0+lowA, lowY+ins, p1-lowA, lowY+ins, sag, cf, 0.75, thin*1.2, 0.00);
+  wire(p0+upA, upY+ins, p1-upA, upY+ins, sag*0.9, cf, 0.75, thin*1.2, 0.33);
+  wire(p0, gy-hf, p1, gy-hf, sag*0.8, cf, 0.45, thin, 0.66);
+  wire(p1+lowA, lowY+ins, farX, lowY+ins+0.01*u, sag*0.4, cf, 0.75, thin*1.2, 0.10);
+  wire(p1+upA, upY+ins, farX, upY+ins+0.01*u, sag*0.4, cf, 0.75, thin*1.2, 0.45);
+  wire(p1, gy-hf, farX, gy-hf+0.01*u, sag*0.4, cf, 0.45, thin, 0.75);
+  wire(invX, invTop, p0-lowA, lowY+ins, 0.03*u, seg(t,2.1,2.7), 0.75, thin*1.2, 0.20);
+
+  // 8. haz de escaneo
+  if (beamA > 0){
+    const bw = 0.04*u;
+    const lg = ctx.createLinearGradient(cx,logoY,cx,gy);
+    lg.addColorStop(0, rgba(BLUE,0)); lg.addColorStop(1, rgba(BLUE,a(0.32*beamA)));
+    poly([[cx,logoY],[scanX-bw,gy],[scanX+bw,gy]], lg);
+    line(scanX,gy-0.44*u,scanX,gy+0.012*u, rgba(BLUE,a(0.25*beamA)), u*0.022);
+    line(scanX,gy-0.44*u,scanX,gy+0.012*u, rgba(BLUE,a(0.95*beamA)), Math.max(2,u*0.004));
+  }
+  const mx = turbX[1], my = gy - turbH[1], litT = litTime(mx);
+  for (let j=0;j<2;j++){
+    const pt = (t - litT - j*0.35)/1.2;
+    if (pt >= 0 && pt <= 1) circle(mx,my, nr*(1.5+4.5*easeOut(pt)), null, rgba(BLUE,a(0.8*(1-pt))), Math.max(1.5,u*0.003));
+  }
+
+  // 9. dron
+  arc(cx,logoY,198*ls,-90,360*easeOut(seg(t,0.15,1.1)), white(a(0.22)), Math.max(1.5,2*ls));
+  const armP = easeOut(seg(t,0.6,1.3));
+  const rotorP = Math.max(0, easeOutBack(seg(t,0.9,1.5)));
+  const rotorA = seg(t,0.9,1.3), blueA = seg(t,1.2,1.7);
+  const sp = Math.max(0, t-1.2), spin = 600*(sp + (Math.exp(-3*sp)-1)/3);
+  for (const sy of [-1,1]) for (const sx of [-1,1]){
+    const dx = sx*R2, dy = sy*R2;
+    if (armP > 0){
+      const r1 = 22, r2 = 22 + 128*armP;
+      const [ax,ay] = lp(dx*r1,dy*r1), [bx,by] = lp(dx*r2,dy*r2);
+      line(ax,ay,bx,by, white(a(1)), Math.max(1.5,3.2*ls));
+    }
+    { const [ax,ay] = lp(dx*38,dy*38), [bx,by] = lp(dx*47,dy*47);
+      line(ax,ay,bx,by, rgba(BLUE,a(blueA)), Math.max(2,4*ls)); }
+    if (rotorA > 0){
+      const [rx,ry] = lp(sx*140, sy*140);
+      circle(rx,ry,48*ls*rotorP, null, white(a(rotorA)), Math.max(2,3.8*ls));
+      const base = sx*sy*spin, ar = 32*ls*rotorP;
+      for (let j=0;j<2;j++) arc(rx,ry,ar, base+200+j*180, 85, rgba(BLUE,a(blueA)), Math.max(2,3.4*ls), 'round');
+      circle(rx,ry,4.2*ls*rotorP, white(a(rotorA)));
+    }
+  }
+  const hubP = Math.max(0, easeOutBack(seg(t,0.5,0.95))), hubA = seg(t,0.5,0.8);
+  const [hx0,hy0] = lp(0,0);
+  circle(hx0,hy0,22*ls*hubP, null, white(a(hubA)), Math.max(2,3.2*ls));
+  circle(hx0,hy0,10.5*ls*hubP, rgba(BLUE,a(hubA)));
+  if (t >= 1.6 && t <= 4.6){
+    const ph = ((t-1.6)/1.3) % 1;
+    circle(hx0,hy0,(24+50*ph)*ls, null, rgba(BLUE,a(0.5*(1-ph))), Math.max(1.5,2*ls));
+  }
+
+  // 10. marca
+  const tSize = 0.10*u, trackP = easeOut(seg(t,3.3,4.6));
+  tracked('NEXUS', cx, h*0.62, tSize, tSize*0.42*(0.7+0.3*trackP), '{s} Georgia, "Times New Roman", serif', white,
+    i => a(easeOut(seg(t,3.3+0.12*i,3.9+0.12*i))),
+    i => (1-easeOut(seg(t,3.3+0.12*i,3.9+0.12*i)))*u*0.02);
+  const divHalf = 0.16*u*easeOut(seg(t,4.1,4.8));
+  if (divHalf > 0) line(cx-divHalf,h*0.66,cx+divHalf,h*0.66, rgba(DIV,a(0.9)), Math.max(1.5,u*0.002));
+  const subSize = 0.026*u;
+  tracked('INSPECCIÓN ESTRUCTURAL', cx, h*0.705, subSize, subSize*0.5, '300 {s} "Helvetica Neue", Helvetica, Arial, sans-serif', white, () => a(0.85*seg(t,4.4,5.0)));
+  const footSize = 0.02*u;
+  tracked('SOFTWARE · AI · DRONES', cx, h*0.965, footSize, footSize*0.45, '300 {s} "Helvetica Neue", Helvetica, Arial, sans-serif', white, () => a(0.45*seg(t,4.7,5.2)));
+}
+
+// ── control de reproducción ──
+let t = 0, last = null, playing = true;
+const scrub = document.getElementById('scrub'), tl = document.getElementById('tl');
+function resize(){
+  const ar = parseFloat(document.getElementById('ar').value);
+  H = 360; W = Math.round(H*ar);
+  const dpr = window.devicePixelRatio || 1, k = 2*dpr;   // render a 2x para nitidez
+  cv.width = W*k; cv.height = H*k;
+  cv.style.width = W+'px'; cv.style.height = H+'px';
+}
+function frame(now){
+  if (last === null) last = now;
+  if (playing){ t += (now-last)/1000; if (t >= TOTAL){ t = TOTAL; playing = false; document.getElementById('pause').textContent = '▶ Reanudar'; } }
+  last = now;
+  draw(t); scrub.value = t; tl.textContent = `t = ${t.toFixed(2)} s / ${TOTAL.toFixed(2)} s`;
+  requestAnimationFrame(frame);
+}
+scrub.addEventListener('input', () => { t = parseFloat(scrub.value); playing = false; document.getElementById('pause').textContent = '▶ Reanudar'; });
+document.getElementById('replay').onclick = () => { t = 0; playing = true; document.getElementById('pause').textContent = '❚❚ Pausa'; };
+document.getElementById('pause').onclick = e => {
+  if (t >= TOTAL) t = 0;
+  playing = !playing; e.target.textContent = playing ? '❚❚ Pausa' : '▶ Reanudar';
+};
+document.getElementById('ar').onchange = resize;
+window.__setT = v => { t = v; playing = false; };   // gancho para pruebas
+resize(); requestAnimationFrame(frame);
+</script>
+</body>
+</html>

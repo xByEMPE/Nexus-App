@@ -1,0 +1,3 @@
+[["wait",800],["eval","__op.pause(); __op.mode('three'); __op.jump(1); __op.clock=3; 1"],["wait",250],["shot","C:/Users/airsc/Documents/Nexus App/docs/animacion-onestop/shots/v1.png",null,1,[150,60,450,300]],
+ ["eval","__op.jump(0); __op.clock=5.5; 1"],["wait",250],["shot","C:/Users/airsc/Documents/Nexus App/docs/animacion-onestop/shots/v0.png",null,1,[150,60,450,300]],
+ ["eval","__op.jump(6); __op.clock=3; 1"],["wait",250],["shot","C:/Users/airsc/Documents/Nexus App/docs/animacion-onestop/shots/v6.png",null,1],["shot","C:/Users/airsc/Documents/Nexus App/docs/animacion-onestop/shots/vfull.png",".iso-page",1]]
