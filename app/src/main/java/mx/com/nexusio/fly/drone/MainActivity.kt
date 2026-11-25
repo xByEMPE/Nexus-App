@@ -204,6 +204,7 @@ class MainActivity : AppCompatActivity(), SDKManagerCallback {
 
     override fun onDestroy() {
         registerHandler.removeCallbacks(retryRegisterRunnable)
+        KeyManager.getInstance().cancelListen(this)
         super.onDestroy()
     }
 
@@ -360,7 +361,8 @@ class MainActivity : AppCompatActivity(), SDKManagerCallback {
                 if (session is SessionManager.Token.Valid && isNetworkAvailable()) {
                     withContext(Dispatchers.Main) { mostrarToast("Actualizando proyectos...") }
 
-                    val endpoint = "$supabaseUrl/rest/v1/projects?select=id,name,client,wind_farm,staff_list&project_type=eq.DRONE"
+                    // RLS ya devuelve solo los proyectos asignados al piloto (project_assignments).
+                    val endpoint = "$supabaseUrl/rest/v1/projects?select=id,name,project_sites(sites(id,name,organizations(name)))&status=neq.archived&order=created_at.desc"
                     val url = URL(endpoint)
                     val connection = url.openConnection() as HttpURLConnection
                     connection.requestMethod = "GET"
@@ -369,7 +371,7 @@ class MainActivity : AppCompatActivity(), SDKManagerCallback {
 
                     when (connection.responseCode) {
                         HttpURLConnection.HTTP_OK -> {
-                            jsonResponse = connection.inputStream.bufferedReader().use { it.readText() }
+                            jsonResponse = normalizarProyectos(connection.inputStream.bufferedReader().use { it.readText() })
                             prefsSafety.edit().putString("cache_projects_$email", jsonResponse).apply()
                         }
                         HttpURLConnection.HTTP_UNAUTHORIZED, HttpURLConnection.HTTP_FORBIDDEN -> {
@@ -391,11 +393,8 @@ class MainActivity : AppCompatActivity(), SDKManagerCallback {
 
                 for (i in 0 until jsonArray.length()) {
                     val item = jsonArray.getJSONObject(i)
-                    val staffListStr = item.optString("staff_list", "")
-                    if (staffListStr.contains(email, ignoreCase = true)) {
-                        projectsList.add(item)
-                        nombresProyectos.add(item.getString("name"))
-                    }
+                    projectsList.add(item)
+                    nombresProyectos.add(item.getString("name"))
                 }
 
                 withContext(Dispatchers.Main) {
@@ -452,6 +451,33 @@ class MainActivity : AppCompatActivity(), SDKManagerCallback {
         }
     }
 
+    /** Traduce projects+project_sites+sites del backend Nexus al formato que usa la pantalla: id, name, client, wind_farm, site_ids. */
+    private fun normalizarProyectos(raw: String): String {
+        val src = JSONArray(raw)
+        val out = JSONArray()
+        for (i in 0 until src.length()) {
+            val p = src.getJSONObject(i)
+            val links = p.optJSONArray("project_sites") ?: JSONArray()
+            val siteIds = JSONArray()
+            val siteNames = mutableListOf<String>()
+            var client = ""
+            for (j in 0 until links.length()) {
+                val site = links.getJSONObject(j).optJSONObject("sites") ?: continue
+                siteIds.put(site.getString("id"))
+                siteNames.add(site.getString("name"))
+                if (client.isEmpty()) client = site.optJSONObject("organizations")?.optString("name", "") ?: ""
+            }
+            out.put(JSONObject().apply {
+                put("id", p.getString("id"))
+                put("name", p.getString("name"))
+                put("client", client.ifEmpty { "No definido" })
+                put("wind_farm", siteNames.joinToString(", "))
+                put("site_ids", siteIds)
+            })
+        }
+        return out.toString()
+    }
+
     private fun descargarTurbinasDelProyecto(project: JSONObject) {
         val projectId = project.getString("id")
         val windFarmName = project.optString("wind_farm", "")
@@ -460,8 +486,8 @@ class MainActivity : AppCompatActivity(), SDKManagerCallback {
             try {
                 val token = (SessionManager.freshToken(this@MainActivity, supabaseUrl, anonKey) as? SessionManager.Token.Valid)?.value ?: anonKey
 
-                var farmId = prefsSafety.getString("cache_farm_id_$windFarmName", "") ?: ""
-                var masterTurbinesJson = prefsSafety.getString("cache_master_turbines_$farmId", "[]") ?: "[]"
+                val farmId = project.optJSONArray("site_ids")?.let { a -> (0 until a.length()).joinToString(",") { a.getString(it) } } ?: ""
+                var masterTurbinesJson = prefsSafety.getString("cache_master_turbines_$projectId", "[]") ?: "[]"
 
                 val localInspectedStr = prefsSafety.getString("cache_inspected_turbines_$projectId", "[]") ?: "[]"
                 val localMap = mutableMapOf<String, JSONObject>()
@@ -474,32 +500,18 @@ class MainActivity : AppCompatActivity(), SDKManagerCallback {
                 } catch (e: Exception) {}
 
                 if (isNetworkAvailable()) {
-                    val encodedFarm = URLEncoder.encode(windFarmName, "UTF-8")
-                    val farmUrl = URL("$supabaseUrl/rest/v1/wind_farms?name=eq.$encodedFarm&select=id")
-                    val farmConn = farmUrl.openConnection() as HttpURLConnection
-                    farmConn.setRequestProperty("apikey", anonKey)
-                    farmConn.setRequestProperty("Authorization", "Bearer $token")
-
-                    if (farmConn.responseCode == HttpURLConnection.HTTP_OK) {
-                        val farmArray = JSONArray(farmConn.inputStream.bufferedReader().use { it.readText() })
-                        if (farmArray.length() > 0) {
-                            farmId = farmArray.getJSONObject(0).getString("id")
-                            prefsSafety.edit().putString("cache_farm_id_$windFarmName", farmId).apply()
-                        }
-                    }
-
                     if (farmId.isNotEmpty()) {
-                        val masterUrl = URL("$supabaseUrl/rest/v1/wind_turbines?farm_id=eq.$farmId&select=name&order=name.asc")
+                        val masterUrl = URL("$supabaseUrl/rest/v1/assets?site_id=in.($farmId)&kind=eq.wind_turbine&select=id,name,wind_turbine_specs(blade_length_m)&order=name.asc")
                         val masterConn = masterUrl.openConnection() as HttpURLConnection
                         masterConn.setRequestProperty("apikey", anonKey)
                         masterConn.setRequestProperty("Authorization", "Bearer $token")
 
                         if (masterConn.responseCode == HttpURLConnection.HTTP_OK) {
                             masterTurbinesJson = masterConn.inputStream.bufferedReader().use { it.readText() }
-                            prefsSafety.edit().putString("cache_master_turbines_$farmId", masterTurbinesJson).apply()
+                            prefsSafety.edit().putString("cache_master_turbines_$projectId", masterTurbinesJson).apply()
                         }
 
-                        val projectTurbinesUrl = URL("$supabaseUrl/rest/v1/turbines?project_id=eq.$projectId&select=turbine_name,status,inspection_date,blade_length")
+                        val projectTurbinesUrl = URL("$supabaseUrl/rest/v1/inspections?project_id=eq.$projectId&select=asset_id,status,inspected_at,blade_length_m")
                         val projectConn = projectTurbinesUrl.openConnection() as HttpURLConnection
                         projectConn.setRequestProperty("apikey", anonKey)
                         projectConn.setRequestProperty("Authorization", "Bearer $token")
@@ -508,9 +520,23 @@ class MainActivity : AppCompatActivity(), SDKManagerCallback {
                             val supaStr = projectConn.inputStream.bufferedReader().use { it.readText() }
                             val supaArray = JSONArray(supaStr)
 
+                            val masterArr = JSONArray(masterTurbinesJson)
+                            val assetById = (0 until masterArr.length()).associate { masterArr.getJSONObject(it).getString("id") to masterArr.getJSONObject(it) }
+
                             for (i in 0 until supaArray.length()) {
-                                val supaObj = supaArray.getJSONObject(i)
-                                val tName = supaObj.getString("turbine_name")
+                                val raw = supaArray.getJSONObject(i)
+                                val asset = assetById[raw.optString("asset_id")] ?: continue
+                                val tName = asset.getString("name")
+                                val pendiente = raw.optString("status") == "pending"
+                                val blade = if (!raw.isNull("blade_length_m")) raw.optDouble("blade_length_m", 0.0)
+                                    else asset.optJSONObject("wind_turbine_specs")?.optDouble("blade_length_m", 0.0) ?: 0.0
+                                // Se traduce al formato que usa el resto de la pantalla (Pendiente / Inspeccionada)
+                                val supaObj = JSONObject().apply {
+                                    put("turbine_name", tName)
+                                    put("status", if (pendiente) "Pendiente" else "Inspeccionada")
+                                    put("inspection_date", if (pendiente || raw.isNull("inspected_at")) "null" else raw.getString("inspected_at"))
+                                    if (blade > 0.0) put("blade_length", blade)
+                                }
 
                                 val localObj = localMap[tName]
                                 if (localObj == null) {
@@ -940,6 +966,14 @@ class MainActivity : AppCompatActivity(), SDKManagerCallback {
 
     private fun registrarDJISDK() {
         if (sdkRegistered) return
+        // La activity se recrea (p. ej. al cambiar día/noche) pero el SDK sigue registrado en el proceso: no volverá a
+        // llamar a onRegisterSuccess, así que se retoma el estado y se vuelve a escuchar la conexión del dron.
+        if (runCatching { SDKManager.getInstance().isRegistered }.getOrDefault(false)) {
+            sdkInitStarted = true; sdkInitComplete = true; sdkRegistered = true
+            registerHandler.removeCallbacks(retryRegisterRunnable)
+            initDroneConnectionListener()
+            return
+        }
         if (!sdkInitStarted) {
             sdkInitStarted = true
             // MSDK 5.20: init(context, InitSettings, callback); LOCAL = la app controla el dron directamente (no plugin de DJI Pilot)
@@ -1001,6 +1035,14 @@ class MainActivity : AppCompatActivity(), SDKManagerCallback {
 
     private fun initDroneConnectionListener() {
         val connectionKey = KeyTools.createKey(FlightControllerKey.KeyConnection)
+        // Estado actual al instante: el listener solo avisa de cambios y una activity recién recreada no lo tiene.
+        KeyManager.getInstance().getValue(connectionKey)?.let { current ->
+            isDroneConnected = current
+            runOnUiThread {
+                actualizarInterfazDron(current)
+                actualizarVisibilidadRotorYValidar()
+            }
+        }
         KeyManager.getInstance().listen(connectionKey, this) { _, newValue ->
             isDroneConnected = newValue ?: false
             runOnUiThread {

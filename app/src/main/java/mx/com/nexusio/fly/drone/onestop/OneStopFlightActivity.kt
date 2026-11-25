@@ -269,24 +269,24 @@ class OneStopFlightActivity : AppCompatActivity() {
         prepararVueltaACasa()
         rcMode = getSharedPreferences(PREFS_SAFETY, MODE_PRIVATE).getInt("rc_mode", 2)
         escucharSticks()
+        escucharBotonesBrillo()
         prepararCamara()
+    }
+
+    /** C1 oscurece y C2 aclara las fotos, en cualquier momento (también con la misión en vuelo). */
+    private fun escucharBotonesBrillo() {
+        val km = KeyManager.getInstance()
+        km.listen(KeyTools.createKey(RemoteControllerKey.KeyCustomButton1Down), this) { _, pressed ->
+            if (pressed == true) mainHandler.post { cambiarBrillo(false) }
+        }
+        km.listen(KeyTools.createKey(RemoteControllerKey.KeyCustomButton2Down), this) { _, pressed ->
+            if (pressed == true) mainHandler.post { cambiarBrillo(true) }
+        }
     }
 
     /** Lente, zoom, tamaño de foto y corrección de distorsión del perfil del equipo; si la cámara rechaza algo, se avisa. */
     private fun prepararCamara() {
         scope.launch { avisarFallosCamara(CameraSetup.apply(cameraPort, CameraSetup.preparation(captureProfile))) }
-    }
-
-    /**
-     * Terminadas las 5 medidas: vídeo y zoom de la cámara de inspección (tele en el M4E), y después [then] (la exposición),
-     * para que el piloto ajuste el brillo viendo la imagen de las fotos. En equipos sin cambio de lente no hace nada.
-     */
-    private fun usarLenteDeInspeccion(then: () -> Unit = {}) {
-        inspectionLensActive = true
-        scope.launch {
-            avisarFallosCamara(CameraSetup.apply(cameraPort, CameraSetup.inspectionLens(captureProfile)))
-            then()
-        }
     }
 
     /** De vuelta al gran angular: para volver a medir o para el vuelo manual tras la misión. */
@@ -317,6 +317,7 @@ class OneStopFlightActivity : AppCompatActivity() {
             val failures = CameraSetup.apply(cameraPort, CameraSetup.manualExposure(captureProfile, step, includeMode = firstTime))
             if (failures.none { it.first is CameraSetting.ManualExposureMode }) manualExposureActive = true
             avisarFallosCamara(failures)
+            mantenerGranAngular()
         }
     }
 
@@ -839,7 +840,8 @@ class OneStopFlightActivity : AppCompatActivity() {
                 tvInfo.visibility = View.VISIBLE
                 layoutBrightness.visibility = View.VISIBLE
                 btnAction.setImageResource(android.R.drawable.ic_media_play)
-                usarLenteDeInspeccion { if (captureProfile.manualExposure) aplicarExposicion() }
+                // El vídeo sigue en el gran angular hasta que el plan esté cargado en el dron (ver iniciarMision).
+                if (captureProfile.manualExposure) aplicarExposicion()
                 mostrarPlan(result)
                 planResult = result
                 comprobarVueltaACasa(result, tvInfo.text.toString())
@@ -928,6 +930,9 @@ class OneStopFlightActivity : AppCompatActivity() {
                 }
                 // Paro pulsado mientras se subía la misión: no se despega.
                 if (inspectionState != InspectionState.UPLOADING) return@launch
+                // Calibración terminada y plan cargado: recién ahora el vídeo pasa a la cámara de inspección.
+                avisarFallosCamara(CameraSetup.apply(cameraPort, CameraSetup.inspectionLens(captureProfile)))
+                inspectionLensActive = true
                 gateway.start(missionPlan.id)
                 proximityGuard.reset()
                 safetyPausePending = false
@@ -1370,9 +1375,17 @@ class OneStopFlightActivity : AppCompatActivity() {
         KeyManager.getInstance().setValue(evKey, lista[nuevoIdx], null)
     }
 
+    /** Hasta que el plan esté cargado, el vídeo y las fotos de calibración van en el gran angular (ajustes de la lente zoom pueden moverlo). */
+    private suspend fun mantenerGranAngular() {
+        if (inspectionLensActive || !captureProfile.useZoomStream) return
+        avisarFallosCamara(CameraSetup.apply(cameraPort, CameraSetup.measurementLens(captureProfile)))
+    }
+
     private fun dispararFoto(dirSuffix: String?, fileSuffix: String, mode: CameraMode, onComplete: () -> Unit) {
+        scope.launch { mantenerGranAngular() }
         KeyManager.getInstance().setValue(KeyTools.createKey(CameraKey.KeyCameraMode, ComponentIndexType.LEFT_OR_MAIN), mode, object : CommonCallbacks.CompletionCallback {
             override fun onSuccess() {
+                scope.launch { mantenerGranAngular() }
                 photoHandler.postDelayed({
                     val configureFileAndShoot = {
                         val nameSettings = CustomExpandNameSettings().apply { customContent = fileSuffix; forceCreateFolder = false; priority = 0; encodingType = EnCodingType.UTF8; relativePosition = RelativePosition.POSITION_END }

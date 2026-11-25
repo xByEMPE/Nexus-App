@@ -163,9 +163,13 @@ object CameraSetup {
      * posicionar el dron para medir sin desorientarse); la tele llega con [inspectionLens].
      */
     fun preparation(p: CaptureProfile): List<CameraSetting> = buildList {
-        addAll(measurementLens(p))
-        if (p.largePhoto) add(CameraSetting.LargePhoto)
-        if (p.dewarping) add(CameraSetting.Dewarping(true))
+        // Con cámara zoom aparte (M4E) estos ajustes tocan la lente zoom y el dron puede pasar el vídeo a ella:
+        // se aplican en [inspectionLens], ya con la calibración terminada y el plan cargado.
+        if (!p.useZoomStream) {
+            if (p.largePhoto) add(CameraSetting.LargePhoto)
+            if (p.dewarping) add(CameraSetting.Dewarping(true))
+        }
+        addAll(measurementLens(p)) // el vídeo en gran angular va al final: nada posterior lo mueve
     }
 
     /** Vídeo en gran angular: para la foto ID, las 5 medidas y el vuelo manual después de la misión. */
@@ -180,6 +184,10 @@ object CameraSetup {
     fun inspectionLens(p: CaptureProfile): List<CameraSetting> = buildList {
         if (p.useZoomStream) add(CameraSetting.VideoSource(zoom = true))
         p.zoomRatio?.let { add(CameraSetting.ZoomRatio(it)) }
+        if (p.useZoomStream) {
+            if (p.largePhoto) add(CameraSetting.LargePhoto)
+            if (p.dewarping) add(CameraSetting.Dewarping(true))
+        }
     }
 
     /** `setInitialManualExposureControlCameraSettings` + `setExposure`: modo manual, obturador mecánico, ISO, tiempo, diafragma. */
