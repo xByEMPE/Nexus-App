@@ -162,6 +162,7 @@ class OneStopFlightActivity : AppCompatActivity() {
     // Vídeo del dron: a pantalla completa, o en miniatura mientras el visor 3D está ampliado
     private lateinit var fpvWidget: FPVWidget
     private var fpvFullParams: ConstraintLayout.LayoutParams? = null
+    private var videoMini = false
     private var planTurbine: WindTurbine? = null
     private val planBackCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() = cerrarVisorPlan()
@@ -199,6 +200,7 @@ class OneStopFlightActivity : AppCompatActivity() {
 
     private lateinit var tvStatus: TextView
     private lateinit var tvDistance: TextView
+    private lateinit var crosshair: CrosshairView
     private lateinit var tvInfo: TextView
     private lateinit var btnAction: ImageButton
     private lateinit var btnPause: ImageButton
@@ -511,6 +513,7 @@ class OneStopFlightActivity : AppCompatActivity() {
         override fun run() {
             val vision = FrontObstacleDetector().detect(VisionSectors.fromMillimeters(droneState.freshSectorsMm()))?.distanceM
             val reading = DistanceReadout.pick(sensorProfile.sensor, droneState.freshLaserM(), vision)
+            actualizarMira(reading)
             if (reading == null) {
                 tvDistance.setText(R.string.onestop_distance_none)
                 tvDistance.setBackgroundColor(Color.WHITE)
@@ -529,6 +532,24 @@ class OneStopFlightActivity : AppCompatActivity() {
             btnHome.visibility = if (casaEditable()) View.VISIBLE else View.GONE
             mainHandler.postDelayed(this, 200)
         }
+    }
+
+    /**
+     * Mira en el centro del vídeo durante la Foto ID y la medición: blanca sin lectura o fuera de alcance, verde si se está
+     * midiendo dentro del alcance (4–6.2 m) y roja si está más cerca que el freno por proximidad. Oculta con el vídeo en miniatura.
+     */
+    private fun actualizarMira(reading: DistanceReadout.Reading?) {
+        val aiming = !videoMini && (inspectionState == InspectionState.ID_PHOTO || inspectionState == InspectionState.MEASURE)
+        crosshair.visibility = if (aiming) View.VISIBLE else View.GONE
+        if (!aiming) return
+        val level = reading?.let { DistanceReadout.level(it.distanceM, inspectionState == InspectionState.MEASURE, sensorProfile) }
+        crosshair.setColor(
+            when (level) {
+                DistanceReadout.Level.TOO_CLOSE -> Color.parseColor("#FF5252")
+                DistanceReadout.Level.IN_RANGE -> Color.parseColor("#69F0AE")
+                else -> Color.WHITE
+            }
+        )
     }
 
     /** Evasión de obstáculos del dron en modo FRENO (3 m), como el original; si el dron rechaza algún ajuste se avisa. */
@@ -550,7 +571,8 @@ class OneStopFlightActivity : AppCompatActivity() {
 
         tvStatus = findViewById(R.id.tv_onestop_status)
         tvDistance = findViewById(R.id.tv_onestop_distance)
-        tvInfo = findViewById(R.id.tv_onestop_info)
+        crosshair = findViewById(R.id.view_onestop_crosshair)
+        tvInfo =findViewById(R.id.tv_onestop_info)
         btnAction = findViewById(R.id.btn_onestop_action)
         btnPause = findViewById(R.id.btn_onestop_pause)
         btnEmergency = findViewById(R.id.btn_onestop_emergency)
@@ -1276,6 +1298,7 @@ class OneStopFlightActivity : AppCompatActivity() {
      * El horizonte artificial y la brújula se ocultan mientras tanto para que no se dibujen sobre el vídeo pequeño.
      */
     private fun mostrarVideoEnMiniatura(mini: Boolean) {
+        videoMini = mini
         val pfd = findViewById<View>(R.id.widget_pfd)
         val hsi = findViewById<View>(R.id.widget_hsi)
         if (mini) {
